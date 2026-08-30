@@ -4,3 +4,5 @@ numpy
 yfinance
 openpyxl
 plotly
+requests
+beautifulsoup4
