@@ -1,38 +1,31 @@
 import pandas as pd
-from pathlib import Path
+
+URL = "https://www.casablanca-bourse.com/live-market/indices/cours?symbol=MASI"
 
 FICHIER_MASI = "Data_masi.xlsx"
 
 
 def update_masi():
 
-    historique = pd.read_excel(FICHIER_MASI)
+    print("Connexion au site Casablanca Bourse...")
 
-    historique["Date"] = pd.to_datetime(
-        historique["Date"]
-    )
+    try:
 
-    historique = historique.sort_values(
-        "Date"
-    )
+        tables = pd.read_html(URL)
 
-    historique = historique.drop_duplicates(
-        subset=["Date"]
-    )
+        print(f"{len(tables)} table(s) trouvée(s).")
 
-    historique.to_excel(
-        FICHIER_MASI,
-        index=False
-    )
+        for i, table in enumerate(tables):
 
-    print(
-        f"{len(historique)} observations enregistrées."
-    )
+            print("\n====================")
+            print(f"TABLE {i}")
+            print("====================")
 
-    print(
-        f"Dernière date : "
-        f"{historique['Date'].max()}"
-    )
+            print(table.head())
+
+    except Exception as e:
+
+        print(f"Erreur : {e}")
 
 
 if __name__ == "__main__":
