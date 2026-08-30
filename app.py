@@ -20,14 +20,12 @@ st.set_page_config(
 
 st.title("CMR - Suivi des Indices")
 
-# --------------------------------------------------
-# MISE A JOUR MASI
-# --------------------------------------------------
+# Import manuel du MASI
 
 st.sidebar.header("Mise à jour des données")
 
 uploaded_file = st.sidebar.file_uploader(
-    "Importer un nouveau fichier MASI",
+    "Importer Data_masi.xlsx",
     type=["xlsx"]
 )
 
@@ -39,13 +37,12 @@ if uploaded_file is not None:
             uploaded_file
         )
 
-        nouveau_df.to_excel(
-            "Data_masi.xlsx",
-            index=False
+        st.sidebar.success(
+            "Fichier chargé avec succès"
         )
 
-        st.sidebar.success(
-            "Fichier Data_masi.xlsx mis à jour"
+        st.dataframe(
+            nouveau_df.head()
         )
 
     except Exception as e:
@@ -54,9 +51,7 @@ if uploaded_file is not None:
             f"Erreur : {e}"
         )
 
-# --------------------------------------------------
-# CHOIX DU MARCHE
-# --------------------------------------------------
+# Choix du marché
 
 source = st.radio(
     "Marché",
@@ -133,6 +128,14 @@ try:
         generate_commentary(metrics)
     )
 
-    st.subheader("Dernières données")
+    st.subheader("10 dernières observations")
 
-    st.dataframe
+    st.dataframe(
+        df.tail(10)
+    )
+
+except Exception as e:
+
+    st.error(
+        f"Erreur : {e}"
+    )
