@@ -1,38 +1,3 @@
-import pandas as pd
-import numpy as np
-import yfinance as yf
-
-
-def load_yahoo_data(symbol):
-
-    return yf.download(
-        symbol,
-        start="2020-01-01",
-        auto_adjust=True,
-        progress=False
-    )
-
-
-def load_maroc_index(filepath):
-
-    df = pd.read_excel(filepath)
-
-    df["Date"] = pd.to_datetime(
-        df["Date"]
-    )
-
-    df = df.sort_values(
-        "Date"
-    )
-
-    df.set_index(
-        "Date",
-        inplace=True
-    )
-
-    return df
-
-
 def compute_metrics(df):
 
     close = df["Close"].dropna()
@@ -40,6 +5,10 @@ def compute_metrics(df):
     last_date = close.index[-1]
 
     last_value = close.iloc[-1]
+
+    # ==========================
+    # MTD
+    # ==========================
 
     prev_month = last_date.month - 1
     prev_year = last_date.year
@@ -56,13 +25,9 @@ def compute_metrics(df):
 
     if len(prev_month_data) > 0:
 
-        prev_month_close = (
-            prev_month_data.iloc[-1]
-        )
-
         perf_mtd = (
             last_value /
-            prev_month_close
+            prev_month_data.iloc[-1]
             - 1
         ) * 100
 
@@ -70,20 +35,20 @@ def compute_metrics(df):
 
         perf_mtd = 0
 
+    # ==========================
+    # YTD
+    # ==========================
+
     prev_year_data = close[
         close.index.year ==
-        last_date.year - 1
+        (last_date.year - 1)
     ]
 
     if len(prev_year_data) > 0:
 
-        prev_year_close = (
-            prev_year_data.iloc[-1]
-        )
-
         perf_ytd = (
             last_value /
-            prev_year_close
+            prev_year_data.iloc[-1]
             - 1
         ) * 100
 
@@ -91,16 +56,56 @@ def compute_metrics(df):
 
         perf_ytd = 0
 
-    returns = (
-        close.pct_change()
-        .dropna()
-    )
+    # ==========================
+    # 1 AN GLISSANT
+    # ==========================
+
+    if len(close) >= 52:
+
+        perf_1an = (
+            last_value /
+            close.iloc[-53]
+            - 1
+        ) * 100
+
+    else:
+
+        perf_1an = 0
+
+    # ==========================
+    # 3 ANS ANNUALISE
+    # ==========================
+
+    if len(close) >= 156:
+
+        perf_3ans = (
+            last_value /
+            close.iloc[-157]
+        )
+
+        perf_3ans_ann = (
+            perf_3ans ** (1 / 3) - 1
+        ) * 100
+
+    else:
+
+        perf_3ans_ann = 0
+
+    # ==========================
+    # VOLATILITE
+    # ==========================
+
+    returns = close.pct_change().dropna()
 
     volatility = (
         returns.std()
         * np.sqrt(52)
         * 100
     )
+
+    # ==========================
+    # DRAWDOWN
+    # ==========================
 
     rolling_max = close.cummax()
 
@@ -121,6 +126,12 @@ def compute_metrics(df):
         "YTD (%)":
         round(perf_ytd, 2),
 
+        "1 An (%)":
+        round(perf_1an, 2),
+
+        "3 Ans Ann. (%)":
+        round(perf_3ans_ann, 2),
+
         "Volatilité (%)":
         round(volatility, 2),
 
@@ -128,16 +139,3 @@ def compute_metrics(df):
         round(max_drawdown, 2)
 
     }
-
-
-def generate_commentary(metrics):
-
-    return f"""
-Performance MTD : {metrics['MTD (%)']} %
-
-Performance YTD : {metrics['YTD (%)']} %
-
-Volatilité : {metrics['Volatilité (%)']} %
-
-Drawdown Max : {metrics['Drawdown Max (%)']} %
-"""
