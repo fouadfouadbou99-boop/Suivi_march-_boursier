@@ -9,7 +9,8 @@ from config import (
 from market import (
     load_yahoo_data,
     load_maroc_index,
-    compute_metrics
+    compute_metrics,
+    generate_commentary
 )
 
 st.set_page_config(
@@ -21,10 +22,7 @@ st.title("CMR - Suivi des Indices")
 
 source = st.radio(
     "Marché",
-    [
-        "Maroc",
-        "International"
-    ]
+    ["Maroc", "International"]
 )
 
 try:
@@ -55,13 +53,42 @@ try:
 
     st.subheader("Indicateurs")
 
-    st.dataframe(
-        pd.DataFrame([metrics])
+    c1, c2, c3, c4, c5 = st.columns(5)
+
+    c1.metric(
+        "1 Mois",
+        f"{metrics['Performance 1 mois (%)']}%"
+    )
+
+    c2.metric(
+        "3 Mois",
+        f"{metrics['Performance 3 mois (%)']}%"
+    )
+
+    c3.metric(
+        "YTD",
+        f"{metrics['Performance YTD (%)']}%"
+    )
+
+    c4.metric(
+        "Volatilité",
+        f"{metrics['Volatilité (%)']}%"
+    )
+
+    c5.metric(
+        "Drawdown",
+        f"{metrics['Drawdown Max (%)']}%"
     )
 
     st.subheader("Historique")
 
     st.line_chart(df["Close"])
+
+    st.subheader("Commentaire automatique")
+
+    st.info(
+        generate_commentary(metrics)
+    )
 
 except Exception as e:
 
