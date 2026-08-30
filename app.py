@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import requests
 
 from config import (
     MAROC_INDICES,
@@ -21,40 +20,43 @@ st.set_page_config(
 
 st.title("CMR - Suivi des Indices")
 
-st.sidebar.header("Administration")
+# --------------------------------------------------
+# MISE A JOUR MASI
+# --------------------------------------------------
 
-if st.sidebar.button("Tester connexion Bourse Casablanca"):
+st.sidebar.header("Mise à jour des données")
+
+uploaded_file = st.sidebar.file_uploader(
+    "Importer un nouveau fichier MASI",
+    type=["xlsx"]
+)
+
+if uploaded_file is not None:
 
     try:
 
-        url = (
-            "https://www.casablanca-bourse.com/"
-            "live-market/indices/cours?symbol=MASI"
+        nouveau_df = pd.read_excel(
+            uploaded_file
         )
 
-        response = requests.get(
-            url,
-            verify=False,
-            timeout=30
+        nouveau_df.to_excel(
+            "Data_masi.xlsx",
+            index=False
         )
 
         st.sidebar.success(
-            f"Connexion OK : {response.status_code}"
-        )
-
-        st.subheader(
-            "Aperçu du code source récupéré"
-        )
-
-        st.code(
-            response.text[:3000]
+            "Fichier Data_masi.xlsx mis à jour"
         )
 
     except Exception as e:
 
         st.sidebar.error(
-            str(e)
+            f"Erreur : {e}"
         )
+
+# --------------------------------------------------
+# CHOIX DU MARCHE
+# --------------------------------------------------
 
 source = st.radio(
     "Marché",
@@ -90,55 +92,47 @@ try:
 
     metrics = compute_metrics(df)
 
-    st.subheader(
-        "Indicateurs"
-    )
+    st.subheader("Indicateurs")
 
-    c1, c2, c3, c4, c5 = st.columns(5)
+    col1, col2, col3, col4, col5 = st.columns(5)
 
-    c1.metric(
+    col1.metric(
         "1 Mois",
         f"{metrics['Performance 1 mois (%)']}%"
     )
 
-    c2.metric(
+    col2.metric(
         "3 Mois",
         f"{metrics['Performance 3 mois (%)']}%"
     )
 
-    c3.metric(
+    col3.metric(
         "YTD",
         f"{metrics['Performance YTD (%)']}%"
     )
 
-    c4.metric(
+    col4.metric(
         "Volatilité",
         f"{metrics['Volatilité (%)']}%"
     )
 
-    c5.metric(
+    col5.metric(
         "Drawdown",
         f"{metrics['Drawdown Max (%)']}%"
     )
 
-    st.subheader(
-        "Historique"
-    )
+    st.subheader("Historique")
 
     st.line_chart(
         df["Close"]
     )
 
-    st.subheader(
-        "Commentaire automatique"
-    )
+    st.subheader("Commentaire automatique")
 
     st.info(
         generate_commentary(metrics)
     )
 
-except Exception as e:
+    st.subheader("Dernières données")
 
-    st.error(
-        f"Erreur : {e}"
-    )
+    st.dataframe
