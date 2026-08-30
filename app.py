@@ -20,9 +20,9 @@ st.set_page_config(
 
 st.title("CMR - Suivi des Indices")
 
-# ==================================
+# ======================================
 # IMPORT EXCEL
-# ==================================
+# ======================================
 
 st.sidebar.header(
     "Mise à jour des données"
@@ -39,9 +39,9 @@ if uploaded_file is not None:
         "Fichier chargé avec succès"
     )
 
-# ==================================
+# ======================================
 # CHOIX DU MARCHE
-# ==================================
+# ======================================
 
 source = st.radio(
     "Marché",
@@ -75,7 +75,24 @@ try:
             WORLD_INDICES[indice]
         )
 
+    # ======================================
+    # INFOS GENERALES
+    # ======================================
+
+    st.caption(
+        f"Dernière mise à jour : {df.index[-1].strftime('%d/%m/%Y')}"
+    )
+
+    st.metric(
+        "Niveau actuel du MASI",
+        f"{df['Close'].iloc[-1]:,.2f}"
+    )
+
     metrics = compute_metrics(df)
+
+    # ======================================
+    # KPI
+    # ======================================
 
     st.subheader("Indicateurs")
 
@@ -91,33 +108,19 @@ try:
         f"{metrics['YTD (%)']}%"
     )
 
-    if metrics["1 An (%)"] is None:
+    col3.metric(
+        "1 An",
+        "N/D"
+        if metrics["1 An (%)"] is None
+        else f"{metrics['1 An (%)']}%"
+    )
 
-        col3.metric(
-            "1 An",
-            "N/D"
-        )
-
-    else:
-
-        col3.metric(
-            "1 An",
-            f"{metrics['1 An (%)']}%"
-        )
-
-    if metrics["3 Ans Ann. (%)"] is None:
-
-        col4.metric(
-            "3 Ans Ann.",
-            "N/D"
-        )
-
-    else:
-
-        col4.metric(
-            "3 Ans Ann.",
-            f"{metrics['3 Ans Ann. (%)']}%"
-        )
+    col4.metric(
+        "3 Ans Ann.",
+        "N/D"
+        if metrics["3 Ans Ann. (%)"] is None
+        else f"{metrics['3 Ans Ann. (%)']}%"
+    )
 
     col5.metric(
         "Volatilité",
@@ -129,11 +132,17 @@ try:
         f"{metrics['Drawdown Max (%)']}%"
     )
 
+    # ======================================
+    # HISTORIQUE
+    # ======================================
+
     st.subheader("Historique")
 
-    st.line_chart(
-        df["Close"]
-    )
+    st.line_chart(df["Close"])
+
+    # ======================================
+    # COMMENTAIRE
+    # ======================================
 
     st.subheader(
         "Commentaire automatique"
@@ -142,6 +151,10 @@ try:
     st.info(
         generate_commentary(metrics)
     )
+
+    # ======================================
+    # DERNIERES OBSERVATIONS
+    # ======================================
 
     st.subheader(
         "10 dernières observations"
