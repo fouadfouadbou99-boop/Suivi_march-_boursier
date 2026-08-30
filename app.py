@@ -26,7 +26,7 @@ st.set_page_config(
 st.title("CMR - Suivi des Indices")
 
 # ====================================================
-# IMPORT EXCEL
+# IMPORT FICHIER
 # ====================================================
 
 st.sidebar.header(
@@ -94,6 +94,31 @@ try:
     st.metric(
         "Niveau actuel du MASI",
         f"{df['Close'].iloc[-1]:,.2f}"
+    )
+
+    # ====================================================
+    # ANALYSE TECHNIQUE
+    # ====================================================
+
+    st.subheader(
+        "Analyse Technique"
+    )
+
+    t1, t2, t3 = st.columns(3)
+
+    t1.metric(
+        "MM20",
+        f"{metrics['MM20']:,.2f}"
+    )
+
+    t2.metric(
+        "MM52",
+        f"{metrics['MM52']:,.2f}"
+    )
+
+    t3.metric(
+        "Signal",
+        metrics["Signal"]
     )
 
     # ====================================================
@@ -168,7 +193,43 @@ try:
     )
 
     # ====================================================
-    # GRAPHIQUE
+    # EXPORT EXCEL
+    # ====================================================
+
+    st.subheader(
+        "Export du rapport"
+    )
+
+    fichier_excel = generate_excel_report(
+        df,
+        metrics
+    )
+
+    st.download_button(
+        label="📊 Télécharger le rapport Excel",
+        data=fichier_excel,
+        file_name="Rapport_MASI.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
+    # ====================================================
+    # PREPARATION DES MM
+    # ====================================================
+
+    df["MM20"] = (
+        df["Close"]
+        .rolling(20)
+        .mean()
+    )
+
+    df["MM52"] = (
+        df["Close"]
+        .rolling(52)
+        .mean()
+    )
+
+    # ====================================================
+    # GRAPHIQUE PLOTLY
     # ====================================================
 
     st.subheader(
@@ -183,12 +244,38 @@ try:
             y=df["Close"],
             mode="lines",
             name="MASI",
-            line=dict(width=3)
+            line=dict(
+                width=3
+            )
+        )
+    )
+
+    fig.add_trace(
+        go.Scatter(
+            x=df.index,
+            y=df["MM20"],
+            mode="lines",
+            name="MM20",
+            line=dict(
+                dash="dash"
+            )
+        )
+    )
+
+    fig.add_trace(
+        go.Scatter(
+            x=df.index,
+            y=df["MM52"],
+            mode="lines",
+            name="MM52",
+            line=dict(
+                dash="dot"
+            )
         )
     )
 
     fig.update_layout(
-        height=500,
+        height=600,
         template="plotly_white",
         hovermode="x unified",
         xaxis_title="Date",
@@ -213,7 +300,7 @@ try:
     )
 
     # ====================================================
-    # DONNEES RECENTES
+    # DERNIERES DONNEES
     # ====================================================
 
     st.subheader(
@@ -222,26 +309,6 @@ try:
 
     st.dataframe(
         df.tail(10)
-    )
-
-    # ====================================================
-    # EXPORT EXCEL
-    # ====================================================
-
-    st.subheader(
-        "Export du rapport"
-    )
-
-    fichier_excel = generate_excel_report(
-        df,
-        metrics
-    )
-
-    st.download_button(
-        label="📊 Télécharger le rapport Excel",
-        data=fichier_excel,
-        file_name="Rapport_MASI.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 
 except Exception as e:
