@@ -1,63 +1,43 @@
 import yfinance as yf
 import pandas as pd
-import numpy as np
 
 
-def load_data(symbol, start="2020-01-01"):
+def load_yahoo_data(symbol):
 
     return yf.download(
         symbol,
-        start=start,
+        start="2020-01-01",
         auto_adjust=True,
         progress=False
     )
 
 
-def compute_metrics(df):
+def load_maroc_index(path):
 
-    if df.empty:
-        return {
-            "Performance YTD": 0.0,
-            "Volatilite": 0.0
-        }
+    df = pd.read_excel(path)
+
+    df["Date"] = pd.to_datetime(df["Date"])
+
+    df.set_index("Date", inplace=True)
+
+    return df
+
+
+def compute_performance(df):
 
     close = df["Close"]
 
     if isinstance(close, pd.DataFrame):
         close = close.iloc[:, 0]
 
-    close = close.dropna()
+    today = close.iloc[-1]
 
-    current_year = close.index[-1].year
-
-    ytd_data = close[
-        close.index.year == current_year
+    ytd = close[
+        close.index.year ==
+        close.index[-1].year
     ]
 
-    first_value = float(ytd_data.iloc[0])
-
-    last_value = float(close.iloc[-1])
-
-    perf_ytd = (
-        last_value / first_value
-    ) - 1
-
-    returns = close.pct_change().dropna()
-
-    volatility = float(
-        returns.std() * np.sqrt(252)
-    )
-
     return {
-        "Performance YTD": round(perf_ytd * 100, 2),
-        "Volatilite": round(volatility * 100, 2)
+        "Cours": today,
+        "YTD": ((today / ytd.iloc[0]) - 1) * 100
     }
-
-
-def generate_commentary(symbol, metrics):
-
-    return (
-        f"Indice {symbol} | "
-        f"Performance YTD : {metrics['Performance YTD']}% | "
-        f"Volatilité : {metrics['Volatilite']}%"
-    )
