@@ -43,27 +43,41 @@ def compute_metrics(df):
         prev_year -= 1
 
     prev_month_data = close[
-        (close.index.year == prev_year) &
+        (close.index.year == prev_year)
+        &
         (close.index.month == prev_month)
     ]
 
-    perf_mtd = (
-        (last_value / prev_month_data.iloc[-1] - 1) * 100
-        if len(prev_month_data) > 0
-        else 0
-    )
+    if len(prev_month_data) > 0:
+
+        perf_mtd = (
+            last_value /
+            prev_month_data.iloc[-1]
+            - 1
+        ) * 100
+
+    else:
+
+        perf_mtd = 0
 
     # YTD
 
     prev_year_data = close[
-        close.index.year == (last_date.year - 1)
+        close.index.year ==
+        last_date.year - 1
     ]
 
-    perf_ytd = (
-        (last_value / prev_year_data.iloc[-1] - 1) * 100
-        if len(prev_year_data) > 0
-        else 0
-    )
+    if len(prev_year_data) > 0:
+
+        perf_ytd = (
+            last_value /
+            prev_year_data.iloc[-1]
+            - 1
+        ) * 100
+
+    else:
+
+        perf_ytd = 0
 
     # 1 an glissant
 
@@ -89,7 +103,8 @@ def compute_metrics(df):
         )
 
         perf_3ans = (
-            ratio ** (1/3) - 1
+            ratio ** (1 / 3)
+            - 1
         ) * 100
 
     else:
@@ -119,11 +134,25 @@ def compute_metrics(df):
         * 100
     )
 
+    # Nouveaux indicateurs
+
+    plus_haut = close.max()
+
+    plus_bas = close.min()
+
+    distance_plus_haut = (
+        last_value /
+        plus_haut
+        - 1
+    ) * 100
+
     return {
 
-        "MTD (%)": round(perf_mtd, 2),
+        "MTD (%)":
+        round(perf_mtd, 2),
 
-        "YTD (%)": round(perf_ytd, 2),
+        "YTD (%)":
+        round(perf_ytd, 2),
 
         "1 An (%)":
         round(perf_1an, 2)
@@ -139,7 +168,17 @@ def compute_metrics(df):
         round(volatility, 2),
 
         "Drawdown Max (%)":
-        round(max_drawdown, 2)
+        round(max_drawdown, 2),
+
+        "Plus Haut":
+        round(plus_haut, 2),
+
+        "Plus Bas":
+        round(plus_bas, 2),
+
+        "Distance Plus Haut (%)":
+        round(distance_plus_haut, 2)
+
     }
 
 
@@ -151,30 +190,16 @@ def generate_commentary(metrics):
         else "négative"
     )
 
-    texte = f"""
+    return f"""
 Le MASI affiche une performance mensuelle (MTD) de {metrics['MTD (%)']} %.
 
 Depuis le début de l'année, la performance ressort à {metrics['YTD (%)']} %.
 
 La volatilité annualisée s'établit à {metrics['Volatilité (%)']} %.
 
-Le drawdown maximal observé atteint {metrics['Drawdown Max (%)']} %.
+Le drawdown maximum observé atteint {metrics['Drawdown Max (%)']} %.
+
+L'indice demeure à {metrics['Distance Plus Haut (%)']} % de son plus haut historique sur la période analysée.
 
 L'évolution globale de l'indice demeure {tendance}.
 """
-
-    if metrics["1 An (%)"] is not None:
-
-        texte += f"""
-
-Performance sur 1 an : {metrics['1 An (%)']} %.
-"""
-
-    if metrics["3 Ans Ann. (%)"] is not None:
-
-        texte += f"""
-
-Performance annualisée sur 3 ans : {metrics['3 Ans Ann. (%)']} %.
-"""
-
-    return texte
