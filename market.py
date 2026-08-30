@@ -5,21 +5,19 @@ import numpy as np
 
 def load_data(symbol, start="2020-01-01"):
 
-    df = yf.download(
+    return yf.download(
         symbol,
         start=start,
         auto_adjust=True,
         progress=False
     )
 
-    return df
-
 
 def compute_metrics(df):
 
     if df.empty:
         return {
-            "Perf_YTD": 0.0,
+            "Performance YTD": 0.0,
             "Volatilite": 0.0
         }
 
@@ -36,9 +34,12 @@ def compute_metrics(df):
         close.index.year == current_year
     ]
 
+    first_value = float(ytd_data.iloc[0])
+
+    last_value = float(close.iloc[-1])
+
     perf_ytd = (
-        float(close.iloc[-1]) /
-        float(ytd_data.iloc[0])
+        last_value / first_value
     ) - 1
 
     returns = close.pct_change().dropna()
@@ -48,16 +49,15 @@ def compute_metrics(df):
     )
 
     return {
-        "Perf_YTD": perf_ytd,
-        "Volatilite": volatility
+        "Performance YTD": round(perf_ytd * 100, 2),
+        "Volatilite": round(volatility * 100, 2)
     }
 
 
 def generate_commentary(symbol, metrics):
 
     return (
-        f"Indice : {symbol}\n"
-        f"Performance YTD : {metrics['Perf_YTD']:.2%}\n"
-        f"Volatilité : {metrics['Volatilite']:.2%}"
+        f"Indice {symbol} | "
+        f"Performance YTD : {metrics['Performance YTD']}% | "
+        f"Volatilité : {metrics['Volatilite']}%"
     )
-``
