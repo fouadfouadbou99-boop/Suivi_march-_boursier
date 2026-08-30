@@ -5,12 +5,14 @@ import yfinance as yf
 
 def load_yahoo_data(symbol):
 
-    return yf.download(
+    df = yf.download(
         symbol,
         start="2020-01-01",
         auto_adjust=True,
         progress=False
     )
+
+    return df
 
 
 def load_maroc_index(filepath):
@@ -43,24 +45,19 @@ def compute_metrics(df):
     ]
 
     perf_ytd = (
-        close.iloc[-1]
-        /
-        ytd.iloc[0]
-        -
-        1
+        close.iloc[-1] /
+        ytd.iloc[0] - 1
     ) * 100
 
     returns = close.pct_change().dropna()
 
     volatility = (
         returns.std()
-        *
-        np.sqrt(252)
-        *
-        100
+        * np.sqrt(252)
+        * 100
     )
 
     return {
-        "Performance YTD": round(perf_ytd, 2),
-        "Volatilite": round(volatility, 2)
+        "Performance YTD (%)": round(perf_ytd, 2),
+        "Volatilité (%)": round(volatility, 2)
     }
