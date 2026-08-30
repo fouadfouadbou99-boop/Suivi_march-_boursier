@@ -1,3 +1,38 @@
+import pandas as pd
+import numpy as np
+import yfinance as yf
+
+
+def load_yahoo_data(symbol):
+
+    return yf.download(
+        symbol,
+        start="2020-01-01",
+        auto_adjust=True,
+        progress=False
+    )
+
+
+def load_maroc_index(filepath):
+
+    df = pd.read_excel(filepath)
+
+    df["Date"] = pd.to_datetime(
+        df["Date"]
+    )
+
+    df = df.sort_values(
+        "Date"
+    )
+
+    df.set_index(
+        "Date",
+        inplace=True
+    )
+
+    return df
+
+
 def compute_metrics(df):
 
     close = df["Close"].dropna()
@@ -6,9 +41,7 @@ def compute_metrics(df):
 
     last_value = close.iloc[-1]
 
-    # ==========================
     # MTD
-    # ==========================
 
     prev_month = last_date.month - 1
     prev_year = last_date.year
@@ -35,13 +68,11 @@ def compute_metrics(df):
 
         perf_mtd = 0
 
-    # ==========================
     # YTD
-    # ==========================
 
     prev_year_data = close[
         close.index.year ==
-        (last_date.year - 1)
+        last_date.year - 1
     ]
 
     if len(prev_year_data) > 0:
@@ -56,9 +87,7 @@ def compute_metrics(df):
 
         perf_ytd = 0
 
-    # ==========================
-    # 1 AN GLISSANT
-    # ==========================
+    # 1 AN
 
     if len(close) >= 52:
 
@@ -72,40 +101,33 @@ def compute_metrics(df):
 
         perf_1an = 0
 
-    # ==========================
     # 3 ANS ANNUALISE
-    # ==========================
 
     if len(close) >= 156:
 
-        perf_3ans = (
+        ratio = (
             last_value /
             close.iloc[-157]
         )
 
-        perf_3ans_ann = (
-            perf_3ans ** (1 / 3) - 1
+        perf_3ans = (
+            ratio ** (1 / 3) - 1
         ) * 100
 
     else:
 
-        perf_3ans_ann = 0
+        perf_3ans = 0
 
-    # ==========================
-    # VOLATILITE
-    # ==========================
-
-    returns = close.pct_change().dropna()
+    returns = (
+        close.pct_change()
+        .dropna()
+    )
 
     volatility = (
         returns.std()
         * np.sqrt(52)
         * 100
     )
-
-    # ==========================
-    # DRAWDOWN
-    # ==========================
 
     rolling_max = close.cummax()
 
@@ -120,22 +142,33 @@ def compute_metrics(df):
 
     return {
 
-        "MTD (%)":
-        round(perf_mtd, 2),
+        "MTD (%)": round(perf_mtd, 2),
 
-        "YTD (%)":
-        round(perf_ytd, 2),
+        "YTD (%)": round(perf_ytd, 2),
 
-        "1 An (%)":
-        round(perf_1an, 2),
+        "1 An (%)": round(perf_1an, 2),
 
-        "3 Ans Ann. (%)":
-        round(perf_3ans_ann, 2),
+        "3 Ans Ann. (%)": round(perf_3ans, 2),
 
-        "Volatilité (%)":
-        round(volatility, 2),
+        "Volatilité (%)": round(volatility, 2),
 
-        "Drawdown Max (%)":
-        round(max_drawdown, 2)
+        "Drawdown Max (%)": round(max_drawdown, 2)
 
     }
+
+
+def generate_commentary(metrics):
+
+    return f"""
+Performance MTD : {metrics['MTD (%)']} %
+
+Performance YTD : {metrics['YTD (%)']} %
+
+Performance 1 an : {metrics['1 An (%)']} %
+
+Performance annualisée 3 ans : {metrics['3 Ans Ann. (%)']} %
+
+Volatilité : {metrics['Volatilité (%)']} %
+
+Drawdown Max : {metrics['Drawdown Max (%)']} %
+"""
