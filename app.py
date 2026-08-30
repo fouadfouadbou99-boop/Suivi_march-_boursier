@@ -1,51 +1,89 @@
 import streamlit as st
-import pandas as pd
 
 from market import (
-    load_data,
-    compute_metrics,
+    load_yahoo_data,
+    compute_performance
+)
+
+from technical import (
+    moving_averages
+)
+
+from risk import (
+    volatility,
+    max_drawdown
+)
+
+from commentary import (
     generate_commentary
 )
 
+from config import INDICES
+
 st.set_page_config(
-    page_title="CMR Suivi Indices"
+    page_title="CMR Marchés",
+    layout="wide"
 )
 
-st.title("CMR - Suivi des Indices")
-
-symbol = st.text_input(
-    "Indice Yahoo",
-    "^FCHI"
+st.title(
+    "CMR - Suivi des Marchés"
 )
 
-try:
+nom = st.selectbox(
+    "Indice",
+    list(INDICES.keys())
+)
 
-    df = load_data(symbol)
+ticker = INDICES[nom]
 
-    if df.empty:
-        st.error("Aucune donnée récupérée.")
-        st.stop()
+df = load_yahoo_data(ticker)
 
-    metrics = compute_metrics(df)
+close = df["Close"]
 
-    st.dataframe(
-        pd.DataFrame([metrics])
+if hasattr(close, "columns"):
+    close = close.iloc[:, 0]
+
+perf = compute_performance(df)
+
+vol = volatility(close)
+
+dd = max_drawdown(close)
+
+ma = moving_averages(close)
+
+c1, c2, c3 = st.columns(3)
+
+c1.metric(
+    "Performance YTD",
+    f"{perf['YTD']:.2f}%"
+)
+
+c2.metric(
+    "Volatilité",
+    f"{vol:.2f}%"
+)
+
+c3.metric(
+    "Drawdown Max",
+    f"{dd:.2f}%"
+)
+
+st.line_chart(close)
+
+st.subheader(
+    "Moyennes Mobiles"
+)
+
+st.write(ma)
+
+st.subheader(
+    "Commentaire"
+)
+
+st.write(
+    generate_commentary(
+        nom,
+        perf["YTD"],
+        vol
     )
-
-    close = df["Close"]
-
-    if isinstance(close, pd.DataFrame):
-        close = close.iloc[:, 0]
-
-    st.line_chart(close)
-
-    st.text(
-        generate_commentary(
-            symbol,
-            metrics
-        )
-    )
-
-except Exception as e:
-
-    st.error(str(e))
+)
