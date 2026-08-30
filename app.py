@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import plotly.graph_objects as go
 
 from config import (
     MAROC_INDICES,
@@ -20,6 +21,10 @@ st.set_page_config(
 
 st.title("CMR - Suivi des Indices")
 
+# ======================================
+# IMPORT EXCEL
+# ======================================
+
 st.sidebar.header(
     "Mise à jour des données"
 )
@@ -34,6 +39,10 @@ if uploaded_file is not None:
     st.sidebar.success(
         "Fichier chargé avec succès"
     )
+
+# ======================================
+# CHOIX DU MARCHE
+# ======================================
 
 source = st.radio(
     "Marché",
@@ -67,8 +76,13 @@ try:
             WORLD_INDICES[indice]
         )
 
+    # ======================================
+    # INFORMATIONS GENERALES
+    # ======================================
+
     st.caption(
-        f"Dernière mise à jour : {df.index[-1].strftime('%d/%m/%Y')}"
+        f"Dernière mise à jour : "
+        f"{df.index[-1].strftime('%d/%m/%Y')}"
     )
 
     st.metric(
@@ -78,68 +92,107 @@ try:
 
     metrics = compute_metrics(df)
 
-    st.subheader("Indicateurs de marché")
+    # ======================================
+    # KPI MARCHE
+    # ======================================
 
-    a, b, c = st.columns(3)
+    st.subheader(
+        "Indicateurs de marché"
+    )
 
-    a.metric(
+    c1, c2, c3 = st.columns(3)
+
+    c1.metric(
         "Plus Haut",
         f"{metrics['Plus Haut']:,.2f}"
     )
 
-    b.metric(
+    c2.metric(
         "Plus Bas",
         f"{metrics['Plus Bas']:,.2f}"
     )
 
-    c.metric(
+    c3.metric(
         "Distance Plus Haut",
         f"{metrics['Distance Plus Haut (%)']}%"
     )
 
     st.divider()
 
-    d, e, f, g, h, i = st.columns(6)
+    c4, c5, c6, c7, c8, c9 = st.columns(6)
 
-    d.metric(
+    c4.metric(
         "MTD",
         f"{metrics['MTD (%)']}%"
     )
 
-    e.metric(
+    c5.metric(
         "YTD",
         f"{metrics['YTD (%)']}%"
     )
 
-    f.metric(
+    c6.metric(
         "1 An",
         "N/D"
         if metrics["1 An (%)"] is None
         else f"{metrics['1 An (%)']}%"
     )
 
-    g.metric(
+    c7.metric(
         "3 Ans Ann.",
         "N/D"
         if metrics["3 Ans Ann. (%)"] is None
         else f"{metrics['3 Ans Ann. (%)']}%"
     )
 
-    h.metric(
+    c8.metric(
         "Volatilité",
         f"{metrics['Volatilité (%)']}%"
     )
 
-    i.metric(
+    c9.metric(
         "Drawdown",
         f"{metrics['Drawdown Max (%)']}%"
     )
 
-    st.subheader("Historique")
+    # ======================================
+    # GRAPHIQUE PLOTLY
+    # ======================================
 
-    st.line_chart(
-        df["Close"]
+    st.subheader(
+        "Historique du MASI"
     )
+
+    fig = go.Figure()
+
+    fig.add_trace(
+        go.Scatter(
+            x=df.index,
+            y=df["Close"],
+            mode="lines",
+            name="MASI",
+            line=dict(
+                width=3
+            )
+        )
+    )
+
+    fig.update_layout(
+        height=500,
+        xaxis_title="Date",
+        yaxis_title="Niveau de l'indice",
+        hovermode="x unified",
+        template="plotly_white"
+    )
+
+    st.plotly_chart(
+        fig,
+        use_container_width=True
+    )
+
+    # ======================================
+    # COMMENTAIRE
+    # ======================================
 
     st.subheader(
         "Commentaire automatique"
@@ -148,6 +201,10 @@ try:
     st.info(
         generate_commentary(metrics)
     )
+
+    # ======================================
+    # DONNEES
+    # ======================================
 
     st.subheader(
         "10 dernières observations"
