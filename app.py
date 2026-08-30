@@ -14,6 +14,10 @@ from market import (
     generate_commentary
 )
 
+from reporting import (
+    generate_excel_report
+)
+
 st.set_page_config(
     page_title="CMR - Suivi des Indices",
     layout="wide"
@@ -76,13 +80,8 @@ try:
             WORLD_INDICES[indice]
         )
 
-    # ======================================
-    # INFORMATIONS GENERALES
-    # ======================================
-
     st.caption(
-        f"Dernière mise à jour : "
-        f"{df.index[-1].strftime('%d/%m/%Y')}"
+        f"Dernière mise à jour : {df.index[-1].strftime('%d/%m/%Y')}"
     )
 
     st.metric(
@@ -142,80 +141,4 @@ try:
         "3 Ans Ann.",
         "N/D"
         if metrics["3 Ans Ann. (%)"] is None
-        else f"{metrics['3 Ans Ann. (%)']}%"
-    )
-
-    c8.metric(
-        "Volatilité",
-        f"{metrics['Volatilité (%)']}%"
-    )
-
-    c9.metric(
-        "Drawdown",
-        f"{metrics['Drawdown Max (%)']}%"
-    )
-
-    # ======================================
-    # GRAPHIQUE PLOTLY
-    # ======================================
-
-    st.subheader(
-        "Historique du MASI"
-    )
-
-    fig = go.Figure()
-
-    fig.add_trace(
-        go.Scatter(
-            x=df.index,
-            y=df["Close"],
-            mode="lines",
-            name="MASI",
-            line=dict(
-                width=3
-            )
-        )
-    )
-
-    fig.update_layout(
-        height=500,
-        xaxis_title="Date",
-        yaxis_title="Niveau de l'indice",
-        hovermode="x unified",
-        template="plotly_white"
-    )
-
-    st.plotly_chart(
-        fig,
-        use_container_width=True
-    )
-
-    # ======================================
-    # COMMENTAIRE
-    # ======================================
-
-    st.subheader(
-        "Commentaire automatique"
-    )
-
-    st.info(
-        generate_commentary(metrics)
-    )
-
-    # ======================================
-    # DONNEES
-    # ======================================
-
-    st.subheader(
-        "10 dernières observations"
-    )
-
-    st.dataframe(
-        df.tail(10)
-    )
-
-except Exception as e:
-
-    st.error(
-        f"Erreur : {e}"
-    )
+        else f"{metrics
