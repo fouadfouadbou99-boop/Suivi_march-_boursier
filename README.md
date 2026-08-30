@@ -1,2 +1,3 @@
-# Suivi_march-_boursier
-Suivi de l'évolution du marché boursier
+# CMR Streamlit Indices
+
+streamlit run app.py
