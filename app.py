@@ -20,11 +20,13 @@ st.set_page_config(
 
 st.title("CMR - Suivi des Indices")
 
-# ============================================
-# IMPORT FICHIER MASI
-# ============================================
+# ==================================
+# IMPORT EXCEL
+# ==================================
 
-st.sidebar.header("Mise à jour des données")
+st.sidebar.header(
+    "Mise à jour des données"
+)
 
 uploaded_file = st.sidebar.file_uploader(
     "Importer Data_masi.xlsx",
@@ -33,29 +35,13 @@ uploaded_file = st.sidebar.file_uploader(
 
 if uploaded_file is not None:
 
-    try:
+    st.sidebar.success(
+        "Fichier chargé avec succès"
+    )
 
-        nouveau_df = pd.read_excel(
-            uploaded_file
-        )
-
-        st.sidebar.success(
-            "Fichier chargé avec succès"
-        )
-
-        st.sidebar.write(
-            f"{len(nouveau_df)} lignes importées"
-        )
-
-    except Exception as e:
-
-        st.sidebar.error(
-            f"Erreur : {e}"
-        )
-
-# ============================================
-# SELECTION MARCHE
-# ============================================
+# ==================================
+# CHOIX DU MARCHE
+# ==================================
 
 source = st.radio(
     "Marché",
@@ -91,10 +77,6 @@ try:
 
     metrics = compute_metrics(df)
 
-    # ============================================
-    # KPI
-    # ============================================
-
     st.subheader("Indicateurs")
 
     col1, col2, col3, col4, col5, col6 = st.columns(6)
@@ -109,15 +91,33 @@ try:
         f"{metrics['YTD (%)']}%"
     )
 
-    col3.metric(
-        "1 An",
-        f"{metrics['1 An (%)']}%"
-    )
+    if metrics["1 An (%)"] is None:
 
-    col4.metric(
-        "3 Ans Ann.",
-        f"{metrics['3 Ans Ann. (%)']}%"
-    )
+        col3.metric(
+            "1 An",
+            "N/D"
+        )
+
+    else:
+
+        col3.metric(
+            "1 An",
+            f"{metrics['1 An (%)']}%"
+        )
+
+    if metrics["3 Ans Ann. (%)"] is None:
+
+        col4.metric(
+            "3 Ans Ann.",
+            "N/D"
+        )
+
+    else:
+
+        col4.metric(
+            "3 Ans Ann.",
+            f"{metrics['3 Ans Ann. (%)']}%"
+        )
 
     col5.metric(
         "Volatilité",
@@ -129,33 +129,19 @@ try:
         f"{metrics['Drawdown Max (%)']}%"
     )
 
-    # ============================================
-    # HISTORIQUE
-    # ============================================
-
     st.subheader("Historique")
 
     st.line_chart(
         df["Close"]
     )
 
-    # ============================================
-    # COMMENTAIRE AUTOMATIQUE
-    # ============================================
-
     st.subheader(
         "Commentaire automatique"
     )
 
     st.info(
-        generate_commentary(
-            metrics
-        )
+        generate_commentary(metrics)
     )
-
-    # ============================================
-    # DONNEES RECENTES
-    # ============================================
 
     st.subheader(
         "10 dernières observations"
