@@ -17,18 +17,11 @@ def load_maroc_index(filepath):
 
     df = pd.read_excel(filepath)
 
-    df["Date"] = pd.to_datetime(
-        df["Date"]
-    )
+    df["Date"] = pd.to_datetime(df["Date"])
 
-    df = df.sort_values(
-        "Date"
-    )
+    df = df.sort_values("Date")
 
-    df.set_index(
-        "Date",
-        inplace=True
-    )
+    df.set_index("Date", inplace=True)
 
     return df
 
@@ -40,9 +33,7 @@ def compute_metrics(df):
     last_date = close.index[-1]
     last_value = close.iloc[-1]
 
-    # =========================
     # MTD
-    # =========================
 
     prev_month = last_date.month - 1
     prev_year = last_date.year
@@ -52,47 +43,29 @@ def compute_metrics(df):
         prev_year -= 1
 
     prev_month_data = close[
-        (close.index.year == prev_year)
-        &
+        (close.index.year == prev_year) &
         (close.index.month == prev_month)
     ]
 
-    if len(prev_month_data) > 0:
+    perf_mtd = (
+        (last_value / prev_month_data.iloc[-1] - 1) * 100
+        if len(prev_month_data) > 0
+        else 0
+    )
 
-        perf_mtd = (
-            last_value /
-            prev_month_data.iloc[-1]
-            - 1
-        ) * 100
-
-    else:
-
-        perf_mtd = 0
-
-    # =========================
     # YTD
-    # =========================
 
     prev_year_data = close[
-        close.index.year ==
-        (last_date.year - 1)
+        close.index.year == (last_date.year - 1)
     ]
 
-    if len(prev_year_data) > 0:
+    perf_ytd = (
+        (last_value / prev_year_data.iloc[-1] - 1) * 100
+        if len(prev_year_data) > 0
+        else 0
+    )
 
-        perf_ytd = (
-            last_value /
-            prev_year_data.iloc[-1]
-            - 1
-        ) * 100
-
-    else:
-
-        perf_ytd = 0
-
-    # =========================
-    # 1 AN
-    # =========================
+    # 1 an glissant
 
     if len(close) >= 52:
 
@@ -106,9 +79,7 @@ def compute_metrics(df):
 
         perf_1an = None
 
-    # =========================
-    # 3 ANS ANNUALISE
-    # =========================
+    # 3 ans annualisé
 
     if len(close) >= 156:
 
@@ -118,22 +89,16 @@ def compute_metrics(df):
         )
 
         perf_3ans = (
-            ratio ** (1 / 3)
-            - 1
+            ratio ** (1/3) - 1
         ) * 100
 
     else:
 
         perf_3ans = None
 
-    # =========================
-    # VOLATILITE
-    # =========================
+    # Volatilité
 
-    returns = (
-        close.pct_change()
-        .dropna()
-    )
+    returns = close.pct_change().dropna()
 
     volatility = (
         returns.std()
@@ -141,9 +106,7 @@ def compute_metrics(df):
         * 100
     )
 
-    # =========================
-    # DRAWDOWN
-    # =========================
+    # Drawdown
 
     rolling_max = close.cummax()
 
@@ -158,11 +121,9 @@ def compute_metrics(df):
 
     return {
 
-        "MTD (%)":
-        round(perf_mtd, 2),
+        "MTD (%)": round(perf_mtd, 2),
 
-        "YTD (%)":
-        round(perf_ytd, 2),
+        "YTD (%)": round(perf_ytd, 2),
 
         "1 An (%)":
         round(perf_1an, 2)
@@ -179,34 +140,41 @@ def compute_metrics(df):
 
         "Drawdown Max (%)":
         round(max_drawdown, 2)
-
     }
 
 
 def generate_commentary(metrics):
 
+    tendance = (
+        "positive"
+        if metrics["YTD (%)"] > 0
+        else "négative"
+    )
+
     texte = f"""
-Performance MTD : {metrics['MTD (%)']} %
+Le MASI affiche une performance mensuelle (MTD) de {metrics['MTD (%)']} %.
 
-Performance YTD : {metrics['YTD (%)']} %
+Depuis le début de l'année, la performance ressort à {metrics['YTD (%)']} %.
 
-Volatilité : {metrics['Volatilité (%)']} %
+La volatilité annualisée s'établit à {metrics['Volatilité (%)']} %.
 
-Drawdown Max : {metrics['Drawdown Max (%)']} %
+Le drawdown maximal observé atteint {metrics['Drawdown Max (%)']} %.
+
+L'évolution globale de l'indice demeure {tendance}.
 """
 
     if metrics["1 An (%)"] is not None:
 
         texte += f"""
 
-Performance 1 an : {metrics['1 An (%)']} %
+Performance sur 1 an : {metrics['1 An (%)']} %.
 """
 
     if metrics["3 Ans Ann. (%)"] is not None:
 
         texte += f"""
 
-Performance annualisée 3 ans : {metrics['3 Ans Ann. (%)']} %
+Performance annualisée sur 3 ans : {metrics['3 Ans Ann. (%)']} %.
 """
 
     return texte
