@@ -7,4 +7,3 @@ WORLD_INDICES = {
     "SP500": "^GSPC",
     "NASDAQ": "^IXIC"
 }
-``
