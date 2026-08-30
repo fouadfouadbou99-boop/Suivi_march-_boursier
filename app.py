@@ -45,7 +45,7 @@ if uploaded_file is not None:
     )
 
 # ====================================================
-# CHOIX DU MARCHE
+# CHOIX DU MARCHÉ
 # ====================================================
 
 source = st.radio(
@@ -83,7 +83,7 @@ try:
     metrics = compute_metrics(df)
 
     # ====================================================
-    # INFORMATIONS GENERALES
+    # INFORMATIONS GÉNÉRALES
     # ====================================================
 
     st.caption(
@@ -104,7 +104,7 @@ try:
         "Analyse Technique"
     )
 
-    t1, t2, t3 = st.columns(3)
+    t1, t2 = st.columns(2)
 
     t1.metric(
         "MM20",
@@ -116,13 +116,26 @@ try:
         f"{metrics['MM52']:,.2f}"
     )
 
-    t3.metric(
-        "Signal",
-        metrics["Signal"]
-    )
+    if metrics["Signal"] == "Haussier":
+
+        st.success(
+            "✅ Tendance : Haussière"
+        )
+
+    elif metrics["Signal"] == "Baissier":
+
+        st.error(
+            "🔴 Tendance : Baissière"
+        )
+
+    else:
+
+        st.warning(
+            "🟠 Tendance : Neutre"
+        )
 
     # ====================================================
-    # KPI DE MARCHE
+    # KPI DE MARCHÉ
     # ====================================================
 
     st.subheader(
@@ -213,7 +226,7 @@ try:
     )
 
     # ====================================================
-    # PREPARATION DES MM
+    # MOYENNES MOBILES
     # ====================================================
 
     df["MM20"] = (
@@ -244,9 +257,7 @@ try:
             y=df["Close"],
             mode="lines",
             name="MASI",
-            line=dict(
-                width=3
-            )
+            line=dict(width=3)
         )
     )
 
@@ -300,7 +311,7 @@ try:
     )
 
     # ====================================================
-    # DERNIERES DONNEES
+    # DERNIÈRES OBSERVATIONS
     # ====================================================
 
     st.subheader(
