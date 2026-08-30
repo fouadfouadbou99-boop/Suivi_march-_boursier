@@ -13,13 +13,11 @@ from market import (
 )
 
 st.set_page_config(
-    page_title="CMR - Marchés",
+    page_title="CMR - Suivi des Indices",
     layout="wide"
 )
 
-st.title(
-    "CMR - Suivi des Indices"
-)
+st.title("CMR - Suivi des Indices")
 
 source = st.radio(
     "Marché",
@@ -29,41 +27,44 @@ source = st.radio(
     ]
 )
 
-if source == "Maroc":
+try:
 
-    indice = st.selectbox(
-        "Indice",
-        list(MAROC_INDICES.keys())
-    )
+    if source == "Maroc":
 
-    try:
+        indice = st.selectbox(
+            "Indice",
+            list(MAROC_INDICES.keys())
+        )
+
         df = load_maroc_index(
             MAROC_INDICES[indice]
         )
 
-    except Exception as e:
+    else:
 
-        st.error(
-            f"Données non disponibles : {e}"
+        indice = st.selectbox(
+            "Indice",
+            list(WORLD_INDICES.keys())
         )
 
-        st.stop()
+        df = load_yahoo_data(
+            WORLD_INDICES[indice]
+        )
 
-else:
+    metrics = compute_metrics(df)
 
-    indice = st.selectbox(
-        "Indice",
-        list(WORLD_INDICES.keys())
+    st.subheader("Indicateurs")
+
+    st.dataframe(
+        pd.DataFrame([metrics])
     )
 
-    df = load_yahoo_data(
-        WORLD_INDICES[indice]
+    st.subheader("Historique")
+
+    st.line_chart(df["Close"])
+
+except Exception as e:
+
+    st.error(
+        f"Erreur : {e}"
     )
-
-metrics = compute_metrics(df)
-
-st.dataframe(
-    pd.DataFrame([metrics])
-)
-
-st.line_chart(df["Close"])
