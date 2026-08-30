@@ -20,7 +20,9 @@ st.set_page_config(
 
 st.title("CMR - Suivi des Indices")
 
-# Import manuel du MASI
+# ===================================
+# IMPORT D'UN NOUVEAU FICHIER MASI
+# ===================================
 
 st.sidebar.header("Mise à jour des données")
 
@@ -41,17 +43,15 @@ if uploaded_file is not None:
             "Fichier chargé avec succès"
         )
 
-        st.dataframe(
-            nouveau_df.head()
-        )
-
     except Exception as e:
 
         st.sidebar.error(
             f"Erreur : {e}"
         )
 
-# Choix du marché
+# ===================================
+# CHOIX DU MARCHÉ
+# ===================================
 
 source = st.radio(
     "Marché",
@@ -87,23 +87,27 @@ try:
 
     metrics = compute_metrics(df)
 
+    # ===================================
+    # KPI
+    # ===================================
+
     st.subheader("Indicateurs")
 
     col1, col2, col3, col4, col5 = st.columns(5)
 
     col1.metric(
-        "1 Mois",
-        f"{metrics['Performance 1 mois (%)']}%"
+        "MTD",
+        f"{metrics['MTD (%)']}%"
     )
 
     col2.metric(
-        "3 Mois",
-        f"{metrics['Performance 3 mois (%)']}%"
+        "QTD",
+        f"{metrics['QTD (%)']}%"
     )
 
     col3.metric(
         "YTD",
-        f"{metrics['Performance YTD (%)']}%"
+        f"{metrics['YTD (%)']}%"
     )
 
     col4.metric(
@@ -116,19 +120,35 @@ try:
         f"{metrics['Drawdown Max (%)']}%"
     )
 
+    # ===================================
+    # GRAPHIQUE
+    # ===================================
+
     st.subheader("Historique")
 
     st.line_chart(
         df["Close"]
     )
 
-    st.subheader("Commentaire automatique")
+    # ===================================
+    # COMMENTAIRE
+    # ===================================
+
+    st.subheader(
+        "Commentaire automatique"
+    )
 
     st.info(
         generate_commentary(metrics)
     )
 
-    st.subheader("10 dernières observations")
+    # ===================================
+    # DERNIERES VALEURS
+    # ===================================
+
+    st.subheader(
+        "10 dernières observations"
+    )
 
     st.dataframe(
         df.tail(10)
