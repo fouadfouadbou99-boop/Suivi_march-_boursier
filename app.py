@@ -18,13 +18,13 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title("CMR - Suivi des Indices")
+st.title(
+    "CMR - Suivi des Indices"
+)
 
-# ===================================
-# IMPORT D'UN NOUVEAU FICHIER MASI
-# ===================================
-
-st.sidebar.header("Mise à jour des données")
+st.sidebar.header(
+    "Mise à jour des données"
+)
 
 uploaded_file = st.sidebar.file_uploader(
     "Importer Data_masi.xlsx",
@@ -33,25 +33,9 @@ uploaded_file = st.sidebar.file_uploader(
 
 if uploaded_file is not None:
 
-    try:
-
-        nouveau_df = pd.read_excel(
-            uploaded_file
-        )
-
-        st.sidebar.success(
-            "Fichier chargé avec succès"
-        )
-
-    except Exception as e:
-
-        st.sidebar.error(
-            f"Erreur : {e}"
-        )
-
-# ===================================
-# CHOIX DU MARCHÉ
-# ===================================
+    st.sidebar.success(
+        "Fichier chargé avec succès"
+    )
 
 source = st.radio(
     "Marché",
@@ -87,13 +71,11 @@ try:
 
     metrics = compute_metrics(df)
 
-    # ===================================
-    # KPI
-    # ===================================
+    st.subheader(
+        "Indicateurs"
+    )
 
-    st.subheader("Indicateurs")
-
-    col1, col2, col3, col4, col5 = st.columns(5)
+    col1, col2, col3, col4 = st.columns(4)
 
     col1.metric(
         "MTD",
@@ -101,50 +83,37 @@ try:
     )
 
     col2.metric(
-        "QTD",
-        f"{metrics['QTD (%)']}%"
-    )
-
-    col3.metric(
         "YTD",
         f"{metrics['YTD (%)']}%"
     )
 
-    col4.metric(
+    col3.metric(
         "Volatilité",
         f"{metrics['Volatilité (%)']}%"
     )
 
-    col5.metric(
+    col4.metric(
         "Drawdown",
         f"{metrics['Drawdown Max (%)']}%"
     )
 
-    # ===================================
-    # GRAPHIQUE
-    # ===================================
-
-    st.subheader("Historique")
+    st.subheader(
+        "Historique"
+    )
 
     st.line_chart(
         df["Close"]
     )
-
-    # ===================================
-    # COMMENTAIRE
-    # ===================================
 
     st.subheader(
         "Commentaire automatique"
     )
 
     st.info(
-        generate_commentary(metrics)
+        generate_commentary(
+            metrics
+        )
     )
-
-    # ===================================
-    # DERNIERES VALEURS
-    # ===================================
 
     st.subheader(
         "10 dernières observations"
