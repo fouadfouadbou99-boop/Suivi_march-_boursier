@@ -1,3 +1,38 @@
+import pandas as pd
+import numpy as np
+import yfinance as yf
+
+
+def load_yahoo_data(symbol):
+
+    return yf.download(
+        symbol,
+        start="2020-01-01",
+        auto_adjust=True,
+        progress=False
+    )
+
+
+def load_maroc_index(filepath):
+
+    df = pd.read_excel(filepath)
+
+    df["Date"] = pd.to_datetime(
+        df["Date"]
+    )
+
+    df = df.sort_values(
+        "Date"
+    )
+
+    df.set_index(
+        "Date",
+        inplace=True
+    )
+
+    return df
+
+
 def compute_metrics(df):
 
     close = df["Close"].dropna()
@@ -6,9 +41,7 @@ def compute_metrics(df):
 
     last_value = close.iloc[-1]
 
-    # -------------------------
     # MTD
-    # -------------------------
 
     prev_month = last_date.month - 1
     prev_year = last_date.year
@@ -37,9 +70,7 @@ def compute_metrics(df):
 
         perf_mtd = 0
 
-    # -------------------------
     # QTD
-    # -------------------------
 
     quarter = ((last_date.month - 1) // 3) + 1
 
@@ -69,9 +100,7 @@ def compute_metrics(df):
         - 1
     ) * 100
 
-    # -------------------------
     # YTD
-    # -------------------------
 
     prev_year_data = close[
         close.index.year ==
@@ -88,9 +117,7 @@ def compute_metrics(df):
         - 1
     ) * 100
 
-    # -------------------------
     # Volatilité
-    # -------------------------
 
     returns = (
         close.pct_change()
@@ -103,9 +130,7 @@ def compute_metrics(df):
         * 100
     )
 
-    # -------------------------
     # Drawdown
-    # -------------------------
 
     rolling_max = close.cummax()
 
@@ -138,3 +163,18 @@ def compute_metrics(df):
         "Drawdown Max (%)":
         round(max_drawdown, 2)
     }
+
+
+def generate_commentary(metrics):
+
+    return f"""
+MTD : {metrics['MTD (%)']} %
+
+QTD : {metrics['QTD (%)']} %
+
+YTD : {metrics['YTD (%)']} %
+
+Volatilité : {metrics['Volatilité (%)']} %
+
+Drawdown Max : {metrics['Drawdown Max (%)']} %
+"""
