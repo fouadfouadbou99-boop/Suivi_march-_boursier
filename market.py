@@ -5,14 +5,12 @@ import yfinance as yf
 
 def load_yahoo_data(symbol):
 
-    df = yf.download(
+    return yf.download(
         symbol,
         start="2020-01-01",
         auto_adjust=True,
         progress=False
     )
-
-    return df
 
 
 def load_maroc_index(filepath):
@@ -40,32 +38,23 @@ def compute_metrics(df):
 
     perf_ytd = (
         close.iloc[-1] /
-        ytd_data.iloc[0]
-        - 1
+        ytd_data.iloc[0] - 1
     ) * 100
 
     if len(close) >= 5:
-
         perf_1m = (
             close.iloc[-1] /
-            close.iloc[-5]
-            - 1
+            close.iloc[-5] - 1
         ) * 100
-
     else:
-
         perf_1m = 0
 
     if len(close) >= 13:
-
         perf_3m = (
             close.iloc[-1] /
-            close.iloc[-13]
-            - 1
+            close.iloc[-13] - 1
         ) * 100
-
     else:
-
         perf_3m = 0
 
     returns = close.pct_change().dropna()
@@ -76,29 +65,36 @@ def compute_metrics(df):
         * 100
     )
 
-    max_close = close.cummax()
+    rolling_max = close.cummax()
 
     drawdown = (
-        (close - max_close)
-        / max_close
-    )
+        close - rolling_max
+    ) / rolling_max
 
     max_drawdown = (
         drawdown.min() * 100
     )
 
     return {
+        "Performance 1 mois (%)": round(perf_1m, 2),
+        "Performance 3 mois (%)": round(perf_3m, 2),
+        "Performance YTD (%)": round(perf_ytd, 2),
+        "Volatilité (%)": round(volatility, 2),
+        "Drawdown Max (%)": round(max_drawdown, 2)
+    }
 
-        "Performance 1 mois (%)":
-        round(perf_1m, 2),
 
-        "Performance 3 mois (%)":
-        round(perf_3m, 2),
+def generate_commentary(metrics):
 
-        "Performance YTD (%)":
-        round(perf_ytd, 2),
+    if metrics["Performance YTD (%)"] > 0:
+        tendance = "haussière"
+    else:
+        tendance = "baissière"
 
-        "Volatilité (%)":
-        round(volatility, 2),
-
-        "Drawdown 
+    return (
+        f"Performance YTD : {metrics['Performance YTD (%)']} %. "
+        f"Performance 3 mois : {metrics['Performance 3 mois (%)']} %. "
+        f"Volatilité : {metrics['Volatilité (%)']} %. "
+        f"Drawdown max : {metrics['Drawdown Max (%)']} %. "
+        f"Tendance : {tendance}."
+    )
