@@ -25,9 +25,9 @@ st.set_page_config(
 
 st.title("CMR - Suivi des Indices")
 
-# ======================================
-# IMPORT EXCEL
-# ======================================
+# ==================================================
+# IMPORT FICHIER
+# ==================================================
 
 st.sidebar.header(
     "Mise à jour des données"
@@ -44,9 +44,9 @@ if uploaded_file is not None:
         "Fichier chargé avec succès"
     )
 
-# ======================================
-# CHOIX DU MARCHE
-# ======================================
+# ==================================================
+# CHOIX DU MARCHÉ
+# ==================================================
 
 source = st.radio(
     "Marché",
@@ -80,8 +80,13 @@ try:
             WORLD_INDICES[indice]
         )
 
+    # ==================================================
+    # INFOS GÉNÉRALES
+    # ==================================================
+
     st.caption(
-        f"Dernière mise à jour : {df.index[-1].strftime('%d/%m/%Y')}"
+        f"Dernière mise à jour : "
+        f"{df.index[-1].strftime('%d/%m/%Y')}"
     )
 
     st.metric(
@@ -91,9 +96,9 @@ try:
 
     metrics = compute_metrics(df)
 
-    # ======================================
-    # KPI MARCHE
-    # ======================================
+    # ==================================================
+    # INDICATEURS DE MARCHÉ
+    # ==================================================
 
     st.subheader(
         "Indicateurs de marché"
@@ -130,15 +135,117 @@ try:
         f"{metrics['YTD (%)']}%"
     )
 
-    c6.metric(
-        "1 An",
+    valeur_1an = (
         "N/D"
         if metrics["1 An (%)"] is None
         else f"{metrics['1 An (%)']}%"
     )
 
-    c7.metric(
-        "3 Ans Ann.",
+    c6.metric(
+        "1 An",
+        valeur_1an
+    )
+
+    valeur_3ans = (
         "N/D"
         if metrics["3 Ans Ann. (%)"] is None
-        else f"{metrics
+        else f"{metrics['3 Ans Ann. (%)']}%"
+    )
+
+    c7.metric(
+        "3 Ans Ann.",
+        valeur_3ans
+    )
+
+    c8.metric(
+        "Volatilité",
+        f"{metrics['Volatilité (%)']}%"
+    )
+
+    c9.metric(
+        "Drawdown",
+        f"{metrics['Drawdown Max (%)']}%"
+    )
+
+    # ==================================================
+    # EXPORT EXCEL
+    # ==================================================
+
+    st.subheader(
+        "Export du rapport"
+    )
+
+    fichier_excel = generate_excel_report(
+        df,
+        metrics
+    )
+
+    st.download_button(
+        label="📊 Télécharger le rapport Excel",
+        data=fichier_excel,
+        file_name="Rapport_MASI.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
+    # ==================================================
+    # GRAPHIQUE PLOTLY
+    # ==================================================
+
+    st.subheader(
+        "Historique du MASI"
+    )
+
+    fig = go.Figure()
+
+    fig.add_trace(
+        go.Scatter(
+            x=df.index,
+            y=df["Close"],
+            mode="lines",
+            name="MASI",
+            line=dict(width=3)
+        )
+    )
+
+    fig.update_layout(
+        height=500,
+        template="plotly_white",
+        hovermode="x unified",
+        xaxis_title="Date",
+        yaxis_title="Niveau de l'indice"
+    )
+
+    st.plotly_chart(
+        fig,
+        use_container_width=True
+    )
+
+    # ==================================================
+    # COMMENTAIRE
+    # ==================================================
+
+    st.subheader(
+        "Commentaire automatique"
+    )
+
+    st.info(
+        generate_commentary(metrics)
+    )
+
+    # ==================================================
+    # DONNÉES RÉCENTES
+    # ==================================================
+
+    st.subheader(
+        "10 dernières observations"
+    )
+
+    st.dataframe(
+        df.tail(10)
+    )
+
+except Exception as e:
+
+    st.error(
+        f"Erreur : {e}"
+    )
