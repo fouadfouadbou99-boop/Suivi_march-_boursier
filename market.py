@@ -41,8 +41,6 @@ def compute_metrics(df):
 
     last_value = close.iloc[-1]
 
-    # MTD
-
     prev_month = last_date.month - 1
     prev_year = last_date.year
 
@@ -58,7 +56,9 @@ def compute_metrics(df):
 
     if len(prev_month_data) > 0:
 
-        prev_month_close = prev_month_data.iloc[-1]
+        prev_month_close = (
+            prev_month_data.iloc[-1]
+        )
 
         perf_mtd = (
             last_value /
@@ -70,54 +70,26 @@ def compute_metrics(df):
 
         perf_mtd = 0
 
-    # QTD
-
-    quarter = ((last_date.month - 1) // 3) + 1
-
-    if quarter == 1:
-
-        prev_quarter_close = close.iloc[0]
-
-    else:
-
-        prev_quarter_month = (
-            (quarter - 1) * 3
-        )
-
-        prev_quarter_data = close[
-            (close.index.year == last_date.year)
-            &
-            (close.index.month == prev_quarter_month)
-        ]
-
-        prev_quarter_close = (
-            prev_quarter_data.iloc[-1]
-        )
-
-    perf_qtd = (
-        last_value /
-        prev_quarter_close
-        - 1
-    ) * 100
-
-    # YTD
-
     prev_year_data = close[
         close.index.year ==
         last_date.year - 1
     ]
 
-    prev_year_close = (
-        prev_year_data.iloc[-1]
-    )
+    if len(prev_year_data) > 0:
 
-    perf_ytd = (
-        last_value /
-        prev_year_close
-        - 1
-    ) * 100
+        prev_year_close = (
+            prev_year_data.iloc[-1]
+        )
 
-    # Volatilité
+        perf_ytd = (
+            last_value /
+            prev_year_close
+            - 1
+        ) * 100
+
+    else:
+
+        perf_ytd = 0
 
     returns = (
         close.pct_change()
@@ -130,8 +102,6 @@ def compute_metrics(df):
         * 100
     )
 
-    # Drawdown
-
     rolling_max = close.cummax()
 
     drawdown = (
@@ -139,40 +109,33 @@ def compute_metrics(df):
     ) / rolling_max
 
     max_drawdown = (
-        drawdown.min() * 100
+        drawdown.min()
+        * 100
     )
 
     return {
 
-        "MTD (%)": round(
-            perf_mtd, 2
-        ),
+        "MTD (%)":
+        round(perf_mtd, 2),
 
-        "QTD (%)": round(
-            perf_qtd, 2
-        ),
+        "YTD (%)":
+        round(perf_ytd, 2),
 
-        "YTD (%)": round(
-            perf_ytd, 2
-        ),
-
-        "Volatilité (%)": round(
-            volatility, 2
-        ),
+        "Volatilité (%)":
+        round(volatility, 2),
 
         "Drawdown Max (%)":
         round(max_drawdown, 2)
+
     }
 
 
 def generate_commentary(metrics):
 
     return f"""
-MTD : {metrics['MTD (%)']} %
+Performance MTD : {metrics['MTD (%)']} %
 
-QTD : {metrics['QTD (%)']} %
-
-YTD : {metrics['YTD (%)']} %
+Performance YTD : {metrics['YTD (%)']} %
 
 Volatilité : {metrics['Volatilité (%)']} %
 
