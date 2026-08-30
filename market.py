@@ -80,7 +80,7 @@ def compute_metrics(df):
 
         perf_1an = None
 
-    # 3 ANS
+    # 3 ANS ANNUALISÉ
 
     if len(close) >= 156:
 
@@ -90,14 +90,15 @@ def compute_metrics(df):
         )
 
         perf_3ans = (
-            ratio ** (1 / 3) - 1
+            ratio ** (1 / 3)
+            - 1
         ) * 100
 
     else:
 
         perf_3ans = None
 
-    # Volatilité
+    # VOLATILITÉ
 
     returns = close.pct_change().dropna()
 
@@ -107,7 +108,7 @@ def compute_metrics(df):
         * 100
     )
 
-    # Drawdown
+    # DRAWDOWN
 
     rolling_max = close.cummax()
 
@@ -119,7 +120,7 @@ def compute_metrics(df):
         drawdown.min() * 100
     )
 
-    # Plus haut / plus bas
+    # PLUS HAUT / BAS
 
     plus_haut = close.max()
 
@@ -129,7 +130,7 @@ def compute_metrics(df):
         last_value / plus_haut - 1
     ) * 100
 
-    # Moyennes mobiles
+    # MOYENNES MOBILES
 
     mm20 = close.rolling(20).mean().iloc[-1]
 
@@ -186,11 +187,34 @@ def compute_metrics(df):
 
         "Signal":
         signal
-
     }
 
 
 def generate_commentary(metrics):
 
     return f"""
-Le MASI affiche une
+Le MASI affiche une performance mensuelle (MTD) de
+{metrics['MTD (%)']} %.
+
+Depuis le début de l'année, la performance ressort à
+{metrics['YTD (%)']} %.
+
+La moyenne mobile 20 semaines ressort à
+{metrics['MM20']}.
+
+La moyenne mobile 52 semaines ressort à
+{metrics['MM52']}.
+
+Le signal technique est actuellement :
+{metrics['Signal']}.
+
+La volatilité annualisée s'établit à
+{metrics['Volatilité (%)']} %.
+
+Le drawdown maximal atteint
+{metrics['Drawdown Max (%)']} %.
+
+L'indice demeure à
+{metrics['Distance Plus Haut (%)']} %
+de son plus haut historique.
+"""
