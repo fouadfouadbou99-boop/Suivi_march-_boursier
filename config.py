@@ -1,11 +1,6 @@
 MAROC_INDICES = {
-    "MASI": "data/MASI.xlsx",
-    "MASI20": "data/MASI20.xlsx",
-    "Banques": "data/Banques.xlsx",
-    "Assurances": "data/Assurances.xlsx",
-    "Immobilier": "data/Immobilier.xlsx",
-    "Mines": "data/Mines.xlsx"
-}
+    MAROC_INDICES = {
+    "MASI": "Data_masi.xlsx"
 
 WORLD_INDICES = {
     "CAC40": "^FCHI",
