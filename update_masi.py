@@ -1,24 +1,40 @@
 import pandas as pd
+from pathlib import Path
 
-# historique existant
-historique = pd.read_excel(
-    "Data_masi.xlsx"
-)
+FICHIER_MASI = "Data_masi.xlsx"
 
-# nouvelles données récupérées
-nouveau = pd.read_excel(
-    "maj_masi.xlsx"
-)
 
-df = pd.concat(
-    [historique, nouveau]
-)
+def update_masi():
 
-df = df.drop_duplicates()
+    historique = pd.read_excel(FICHIER_MASI)
 
-df.to_excel(
-    "Data_masi.xlsx",
-    index=False
-)
+    historique["Date"] = pd.to_datetime(
+        historique["Date"]
+    )
 
-print("MASI mis à jour")
+    historique = historique.sort_values(
+        "Date"
+    )
+
+    historique = historique.drop_duplicates(
+        subset=["Date"]
+    )
+
+    historique.to_excel(
+        FICHIER_MASI,
+        index=False
+    )
+
+    print(
+        f"{len(historique)} observations enregistrées."
+    )
+
+    print(
+        f"Dernière date : "
+        f"{historique['Date'].max()}"
+    )
+
+
+if __name__ == "__main__":
+
+    update_masi()
