@@ -18,13 +18,13 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title(
-    "CMR - Suivi des Indices"
-)
+st.title("CMR - Suivi des Indices")
 
-st.sidebar.header(
-    "Mise à jour des données"
-)
+# ============================================
+# IMPORT FICHIER MASI
+# ============================================
+
+st.sidebar.header("Mise à jour des données")
 
 uploaded_file = st.sidebar.file_uploader(
     "Importer Data_masi.xlsx",
@@ -33,9 +33,29 @@ uploaded_file = st.sidebar.file_uploader(
 
 if uploaded_file is not None:
 
-    st.sidebar.success(
-        "Fichier chargé avec succès"
-    )
+    try:
+
+        nouveau_df = pd.read_excel(
+            uploaded_file
+        )
+
+        st.sidebar.success(
+            "Fichier chargé avec succès"
+        )
+
+        st.sidebar.write(
+            f"{len(nouveau_df)} lignes importées"
+        )
+
+    except Exception as e:
+
+        st.sidebar.error(
+            f"Erreur : {e}"
+        )
+
+# ============================================
+# SELECTION MARCHE
+# ============================================
 
 source = st.radio(
     "Marché",
@@ -71,11 +91,13 @@ try:
 
     metrics = compute_metrics(df)
 
-    st.subheader(
-        "Indicateurs"
-    )
+    # ============================================
+    # KPI
+    # ============================================
 
-    col1, col2, col3, col4 = st.columns(4)
+    st.subheader("Indicateurs")
+
+    col1, col2, col3, col4, col5, col6 = st.columns(6)
 
     col1.metric(
         "MTD",
@@ -88,22 +110,38 @@ try:
     )
 
     col3.metric(
+        "1 An",
+        f"{metrics['1 An (%)']}%"
+    )
+
+    col4.metric(
+        "3 Ans Ann.",
+        f"{metrics['3 Ans Ann. (%)']}%"
+    )
+
+    col5.metric(
         "Volatilité",
         f"{metrics['Volatilité (%)']}%"
     )
 
-    col4.metric(
+    col6.metric(
         "Drawdown",
         f"{metrics['Drawdown Max (%)']}%"
     )
 
-    st.subheader(
-        "Historique"
-    )
+    # ============================================
+    # HISTORIQUE
+    # ============================================
+
+    st.subheader("Historique")
 
     st.line_chart(
         df["Close"]
     )
+
+    # ============================================
+    # COMMENTAIRE AUTOMATIQUE
+    # ============================================
 
     st.subheader(
         "Commentaire automatique"
@@ -114,6 +152,10 @@ try:
             metrics
         )
     )
+
+    # ============================================
+    # DONNEES RECENTES
+    # ============================================
 
     st.subheader(
         "10 dernières observations"
