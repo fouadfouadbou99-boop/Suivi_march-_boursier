@@ -8,14 +8,13 @@ from market import (
 )
 
 st.set_page_config(
-    page_title="CMR - Suivi des Indices",
-    layout="wide"
+    page_title="CMR Suivi Indices"
 )
 
 st.title("CMR - Suivi des Indices")
 
 symbol = st.text_input(
-    "Ticker Yahoo Finance",
+    "Indice Yahoo",
     "^FCHI"
 )
 
@@ -24,7 +23,7 @@ try:
     df = load_data(symbol)
 
     if df.empty:
-        st.error("Aucune donnée disponible")
+        st.error("Aucune donnée récupérée.")
         st.stop()
 
     metrics = compute_metrics(df)
@@ -40,7 +39,7 @@ try:
 
     st.line_chart(close)
 
-    st.write(
+    st.text(
         generate_commentary(
             symbol,
             metrics
@@ -48,4 +47,5 @@ try:
     )
 
 except Exception as e:
+
     st.error(str(e))
