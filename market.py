@@ -1,4 +1,30 @@
+import pandas as pd
 import numpy as np
+import yfinance as yf
+
+
+def load_yahoo_data(symbol):
+
+    return yf.download(
+        symbol,
+        start="2020-01-01",
+        auto_adjust=True,
+        progress=False
+    )
+
+
+def load_maroc_index(filepath):
+
+    df = pd.read_excel(filepath)
+
+    df["Date"] = pd.to_datetime(df["Date"])
+
+    df.set_index(
+        "Date",
+        inplace=True
+    )
+
+    return df
 
 
 def compute_metrics(df):
@@ -6,7 +32,7 @@ def compute_metrics(df):
     close = df["Close"]
 
     if isinstance(close, pd.DataFrame):
-        close = close.iloc[:,0]
+        close = close.iloc[:, 0]
 
     close = close.dropna()
 
@@ -28,10 +54,13 @@ def compute_metrics(df):
 
     volatility = (
         returns.std()
-        * np.sqrt(252)
-        * 100
+        *
+        np.sqrt(252)
+        *
+        100
     )
 
     return {
-        "Performance YTD": round(perf_ytd,2),
-        "Volatilite": round(
+        "Performance YTD": round(perf_ytd, 2),
+        "Volatilite": round(volatility, 2)
+    }
