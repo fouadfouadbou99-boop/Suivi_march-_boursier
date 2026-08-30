@@ -36,9 +36,18 @@ if source == "Maroc":
         list(MAROC_INDICES.keys())
     )
 
-    df = load_maroc_index(
-        MAROC_INDICES[indice]
-    )
+    try:
+        df = load_maroc_index(
+            MAROC_INDICES[indice]
+        )
+
+    except Exception as e:
+
+        st.error(
+            f"Données non disponibles : {e}"
+        )
+
+        st.stop()
 
 else:
 
