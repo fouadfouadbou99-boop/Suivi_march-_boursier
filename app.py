@@ -25,9 +25,9 @@ st.set_page_config(
 
 st.title("CMR - Suivi des Indices")
 
-# ==================================================
-# IMPORT FICHIER
-# ==================================================
+# ====================================================
+# IMPORT EXCEL
+# ====================================================
 
 st.sidebar.header(
     "Mise à jour des données"
@@ -44,9 +44,9 @@ if uploaded_file is not None:
         "Fichier chargé avec succès"
     )
 
-# ==================================================
-# CHOIX DU MARCHÉ
-# ==================================================
+# ====================================================
+# CHOIX DU MARCHE
+# ====================================================
 
 source = st.radio(
     "Marché",
@@ -80,9 +80,11 @@ try:
             WORLD_INDICES[indice]
         )
 
-    # ==================================================
-    # INFOS GÉNÉRALES
-    # ==================================================
+    metrics = compute_metrics(df)
+
+    # ====================================================
+    # INFORMATIONS GENERALES
+    # ====================================================
 
     st.caption(
         f"Dernière mise à jour : "
@@ -94,43 +96,41 @@ try:
         f"{df['Close'].iloc[-1]:,.2f}"
     )
 
-    metrics = compute_metrics(df)
-
-    # ==================================================
-    # INDICATEURS DE MARCHÉ
-    # ==================================================
+    # ====================================================
+    # KPI DE MARCHE
+    # ====================================================
 
     st.subheader(
         "Indicateurs de marché"
     )
 
-    c1, c2, c3 = st.columns(3)
+    a, b, c = st.columns(3)
 
-    c1.metric(
+    a.metric(
         "Plus Haut",
         f"{metrics['Plus Haut']:,.2f}"
     )
 
-    c2.metric(
+    b.metric(
         "Plus Bas",
         f"{metrics['Plus Bas']:,.2f}"
     )
 
-    c3.metric(
+    c.metric(
         "Distance Plus Haut",
         f"{metrics['Distance Plus Haut (%)']}%"
     )
 
     st.divider()
 
-    c4, c5, c6, c7, c8, c9 = st.columns(6)
+    d, e, f, g, h, i = st.columns(6)
 
-    c4.metric(
+    d.metric(
         "MTD",
         f"{metrics['MTD (%)']}%"
     )
 
-    c5.metric(
+    e.metric(
         "YTD",
         f"{metrics['YTD (%)']}%"
     )
@@ -141,7 +141,7 @@ try:
         else f"{metrics['1 An (%)']}%"
     )
 
-    c6.metric(
+    f.metric(
         "1 An",
         valeur_1an
     )
@@ -152,44 +152,24 @@ try:
         else f"{metrics['3 Ans Ann. (%)']}%"
     )
 
-    c7.metric(
+    g.metric(
         "3 Ans Ann.",
         valeur_3ans
     )
 
-    c8.metric(
+    h.metric(
         "Volatilité",
         f"{metrics['Volatilité (%)']}%"
     )
 
-    c9.metric(
+    i.metric(
         "Drawdown",
         f"{metrics['Drawdown Max (%)']}%"
     )
 
-    # ==================================================
-    # EXPORT EXCEL
-    # ==================================================
-
-    st.subheader(
-        "Export du rapport"
-    )
-
-    fichier_excel = generate_excel_report(
-        df,
-        metrics
-    )
-
-    st.download_button(
-        label="📊 Télécharger le rapport Excel",
-        data=fichier_excel,
-        file_name="Rapport_MASI.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
-
-    # ==================================================
-    # GRAPHIQUE PLOTLY
-    # ==================================================
+    # ====================================================
+    # GRAPHIQUE
+    # ====================================================
 
     st.subheader(
         "Historique du MASI"
@@ -220,9 +200,9 @@ try:
         use_container_width=True
     )
 
-    # ==================================================
+    # ====================================================
     # COMMENTAIRE
-    # ==================================================
+    # ====================================================
 
     st.subheader(
         "Commentaire automatique"
@@ -232,9 +212,9 @@ try:
         generate_commentary(metrics)
     )
 
-    # ==================================================
-    # DONNÉES RÉCENTES
-    # ==================================================
+    # ====================================================
+    # DONNEES RECENTES
+    # ====================================================
 
     st.subheader(
         "10 dernières observations"
@@ -242,6 +222,26 @@ try:
 
     st.dataframe(
         df.tail(10)
+    )
+
+    # ====================================================
+    # EXPORT EXCEL
+    # ====================================================
+
+    st.subheader(
+        "Export du rapport"
+    )
+
+    fichier_excel = generate_excel_report(
+        df,
+        metrics
+    )
+
+    st.download_button(
+        label="📊 Télécharger le rapport Excel",
+        data=fichier_excel,
+        file_name="Rapport_MASI.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 
 except Exception as e:
