@@ -20,9 +20,51 @@ st.set_page_config(
 
 st.title("CMR - Suivi des Indices")
 
+# ---------------------
+# BOUTON UPDATE MASI
+# ---------------------
+
+st.sidebar.header("Administration")
+
+if st.sidebar.button("Mettre à jour le MASI"):
+
+    URL = (
+        "https://www.casablanca-bourse.com/"
+        "live-market/indices/cours?symbol=MASI"
+    )
+
+    try:
+
+        tables = pd.read_html(URL)
+
+        st.sidebar.success(
+            f"{len(tables)} table(s) trouvée(s)"
+        )
+
+        for i, table in enumerate(tables):
+
+            st.subheader(
+                f"Table récupérée {i}"
+            )
+
+            st.dataframe(table.head())
+
+    except Exception as e:
+
+        st.sidebar.error(
+            f"Erreur : {e}"
+        )
+
+# ---------------------
+# CHOIX DU MARCHÉ
+# ---------------------
+
 source = st.radio(
     "Marché",
-    ["Maroc", "International"]
+    [
+        "Maroc",
+        "International"
+    ]
 )
 
 try:
