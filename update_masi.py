@@ -1,33 +1,35 @@
+import requests
 import pandas as pd
+from bs4 import BeautifulSoup
 
 URL = "https://www.casablanca-bourse.com/live-market/indices/cours?symbol=MASI"
 
-FICHIER_MASI = "Data_masi.xlsx"
 
-
-def update_masi():
-
-    print("Connexion au site Casablanca Bourse...")
+def test_connexion():
 
     try:
 
-        tables = pd.read_html(URL)
+        response = requests.get(
+            URL,
+            verify=False,
+            timeout=30
+        )
 
-        print(f"{len(tables)} table(s) trouvée(s).")
+        print(
+            f"Statut HTTP : {response.status_code}"
+        )
 
-        for i, table in enumerate(tables):
-
-            print("\n====================")
-            print(f"TABLE {i}")
-            print("====================")
-
-            print(table.head())
+        print(
+            response.text[:3000]
+        )
 
     except Exception as e:
 
-        print(f"Erreur : {e}")
+        print(
+            f"Erreur : {e}"
+        )
 
 
 if __name__ == "__main__":
 
-    update_masi()
+    test_connexion()
