@@ -19,6 +19,20 @@ def load_maroc_index(filepath):
 
     df["Date"] = pd.to_datetime(df["Date"])
 
+    df["Close"] = (
+        df["Close"]
+        .astype(str)
+        .str.replace(" ", "", regex=False)
+        .str.replace(",", ".", regex=False)
+    )
+
+    df["Close"] = pd.to_numeric(
+        df["Close"],
+        errors="coerce"
+    )
+
+    df = df.dropna(subset=["Close"])
+
     df = df.sort_values("Date")
 
     df.set_index("Date", inplace=True)
@@ -66,13 +80,14 @@ def compute_metrics(df):
         else 0
     )
 
-    # 1 AN
+    # PERFORMANCE 1 AN
+    # ~252 séances de bourse
 
-    if len(close) >= 52:
+    if len(close) >= 252:
 
         perf_1an = (
             last_value /
-            close.iloc[-53]
+            close.iloc[-253]
             - 1
         ) * 100
 
@@ -80,13 +95,14 @@ def compute_metrics(df):
 
         perf_1an = None
 
-    # 3 ANS ANNUALISÉ
+    # PERFORMANCE 3 ANS ANNUALISÉE
+    # ~756 séances de bourse
 
-    if len(close) >= 156:
+    if len(close) >= 756:
 
         ratio = (
             last_value /
-            close.iloc[-157]
+            close.iloc[-757]
         )
 
         perf_3ans = (
@@ -98,13 +114,14 @@ def compute_metrics(df):
 
         perf_3ans = None
 
-    # VOLATILITÉ
+    # VOLATILITÉ ANNUALISÉE
+    # Données quotidiennes
 
     returns = close.pct_change().dropna()
 
     volatility = (
         returns.std()
-        * np.sqrt(52)
+        * np.sqrt(252)
         * 100
     )
 
@@ -150,9 +167,11 @@ def compute_metrics(df):
 
     return {
 
-        "MTD (%)": round(perf_mtd, 2),
+        "MTD (%)":
+        round(perf_mtd, 2),
 
-        "YTD (%)": round(perf_ytd, 2),
+        "YTD (%)":
+        round(perf_ytd, 2),
 
         "1 An (%)":
         round(perf_1an, 2)
@@ -196,25 +215,4 @@ def generate_commentary(metrics):
 Le MASI affiche une performance mensuelle (MTD) de
 {metrics['MTD (%)']} %.
 
-Depuis le début de l'année, la performance ressort à
-{metrics['YTD (%)']} %.
-
-La moyenne mobile 20 semaines ressort à
-{metrics['MM20']}.
-
-La moyenne mobile 52 semaines ressort à
-{metrics['MM52']}.
-
-Le signal technique est actuellement :
-{metrics['Signal']}.
-
-La volatilité annualisée s'établit à
-{metrics['Volatilité (%)']} %.
-
-Le drawdown maximal atteint
-{metrics['Drawdown Max (%)']} %.
-
-L'indice demeure à
-{metrics['Distance Plus Haut (%)']} %
-de son plus haut historique.
-"""
+Depuis le début de l'anné
