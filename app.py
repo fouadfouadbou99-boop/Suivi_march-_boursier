@@ -39,7 +39,6 @@ uploaded_file = st.sidebar.file_uploader(
 )
 
 if uploaded_file is not None:
-
     st.sidebar.success(
         "Fichier chargé avec succès"
     )
@@ -65,25 +64,40 @@ try:
             list(MAROC_INDICES.keys())
         )
 
-        # Utilisation du fichier importé si présent
         if uploaded_file is not None:
 
             df = pd.read_excel(uploaded_file)
 
             if "Date" not in df.columns:
                 st.error(
-                    "Le fichier Excel doit contenir une colonne appelée 'Date'."
+                    "Colonne Date introuvable"
                 )
                 st.stop()
 
             if "Close" not in df.columns:
                 st.error(
-                    "Le fichier Excel doit contenir une colonne appelée 'Close'."
+                    "Colonne Close introuvable"
                 )
                 st.stop()
 
             df["Date"] = pd.to_datetime(
                 df["Date"]
+            )
+
+            df["Close"] = (
+                df["Close"]
+                .astype(str)
+                .str.replace(" ", "", regex=False)
+                .str.replace(",", ".", regex=False)
+            )
+
+            df["Close"] = pd.to_numeric(
+                df["Close"],
+                errors="coerce"
+            )
+
+            df = df.dropna(
+                subset=["Close"]
             )
 
             df = df.sort_values(
@@ -101,6 +115,18 @@ try:
                 MAROC_INDICES[indice]
             )
 
+            df["Close"] = (
+                df["Close"]
+                .astype(str)
+                .str.replace(" ", "", regex=False)
+                .str.replace(",", ".", regex=False)
+            )
+
+            df["Close"] = pd.to_numeric(
+                df["Close"],
+                errors="coerce"
+            )
+
     else:
 
         indice = st.selectbox(
@@ -114,23 +140,14 @@ try:
 
     metrics = compute_metrics(df)
 
-    # ====================================================
-    # INFORMATIONS GÉNÉRALES
-    # ====================================================
-
     st.caption(
-        f"Dernière mise à jour : "
-        f"{df.index[-1].strftime('%d/%m/%Y')}"
+        f"Dernière mise à jour : {df.index[-1].strftime('%d/%m/%Y')}"
     )
 
     st.metric(
         "Niveau actuel du MASI",
         f"{df['Close'].iloc[-1]:,.2f}"
     )
-
-    # ====================================================
-    # ANALYSE TECHNIQUE
-    # ====================================================
 
     st.subheader(
         "Analyse Technique"
@@ -149,26 +166,11 @@ try:
     )
 
     if metrics["Signal"] == "Haussier":
-
-        st.success(
-            "✅ Tendance : Haussière"
-        )
-
+        st.success("✅ Tendance : Haussière")
     elif metrics["Signal"] == "Baissier":
-
-        st.error(
-            "🔴 Tendance : Baissière"
-        )
-
+        st.error("🔴 Tendance : Baissière")
     else:
-
-        st.warning(
-            "🟠 Tendance : Neutre"
-        )
-
-    # ====================================================
-    # KPI DE MARCHÉ
-    # ====================================================
+        st.warning("🟠 Tendance : Neutre")
 
     st.subheader(
         "Indicateurs de marché"
@@ -205,26 +207,16 @@ try:
         f"{metrics['YTD (%)']}%"
     )
 
-    valeur_1an = (
-        "N/D"
-        if metrics["1 An (%)"] is None
-        else f"{metrics['1 An (%)']}%"
-    )
-
     f.metric(
         "1 An",
-        valeur_1an
-    )
-
-    valeur_3ans = (
-        "N/D"
-        if metrics["3 Ans Ann. (%)"] is None
-        else f"{metrics['3 Ans Ann. (%)']}%"
+        "N/D" if metrics["1 An (%)"] is None
+        else f"{metrics['1 An (%)']}%"
     )
 
     g.metric(
         "3 Ans Ann.",
-        valeur_3ans
+        "N/D" if metrics["3 Ans Ann. (%)"] is None
+        else f"{metrics['3 Ans Ann. (%)']}%"
     )
 
     h.metric(
@@ -236,10 +228,6 @@ try:
         "Drawdown",
         f"{metrics['Drawdown Max (%)']}%"
     )
-
-    # ====================================================
-    # EXPORT EXCEL
-    # ====================================================
 
     st.subheader(
         "Export du rapport"
@@ -257,10 +245,6 @@ try:
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 
-    # ====================================================
-    # MOYENNES MOBILES
-    # ====================================================
-
     df["MM20"] = (
         df["Close"]
         .rolling(20)
@@ -273,10 +257,6 @@ try:
         .mean()
     )
 
-    # ====================================================
-    # GRAPHIQUE PLOTLY
-    # ====================================================
-
     st.subheader(
         "Historique du MASI"
     )
@@ -288,8 +268,7 @@ try:
             x=df.index,
             y=df["Close"],
             mode="lines",
-            name="MASI",
-            line=dict(width=3)
+            name="MASI"
         )
     )
 
@@ -298,10 +277,7 @@ try:
             x=df.index,
             y=df["MM20"],
             mode="lines",
-            name="MM20",
-            line=dict(
-                dash="dash"
-            )
+            name="MM20"
         )
     )
 
@@ -310,29 +286,19 @@ try:
             x=df.index,
             y=df["MM52"],
             mode="lines",
-            name="MM52",
-            line=dict(
-                dash="dot"
-            )
+            name="MM52"
         )
     )
 
     fig.update_layout(
         height=600,
-        template="plotly_white",
-        hovermode="x unified",
-        xaxis_title="Date",
-        yaxis_title="Niveau de l'indice"
+        template="plotly_white"
     )
 
     st.plotly_chart(
         fig,
         width="stretch"
     )
-
-    # ====================================================
-    # COMMENTAIRE
-    # ====================================================
 
     st.subheader(
         "Commentaire automatique"
@@ -341,10 +307,6 @@ try:
     st.info(
         generate_commentary(metrics)
     )
-
-    # ====================================================
-    # DERNIÈRES OBSERVATIONS
-    # ====================================================
 
     st.subheader(
         "10 dernières observations"
