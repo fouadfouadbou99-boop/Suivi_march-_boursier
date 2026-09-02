@@ -65,9 +65,41 @@ try:
             list(MAROC_INDICES.keys())
         )
 
-        df = load_maroc_index(
-            MAROC_INDICES[indice]
-        )
+        # Utilisation du fichier importé si présent
+        if uploaded_file is not None:
+
+            df = pd.read_excel(uploaded_file)
+
+            if "Date" not in df.columns:
+                st.error(
+                    "Le fichier Excel doit contenir une colonne appelée 'Date'."
+                )
+                st.stop()
+
+            if "Close" not in df.columns:
+                st.error(
+                    "Le fichier Excel doit contenir une colonne appelée 'Close'."
+                )
+                st.stop()
+
+            df["Date"] = pd.to_datetime(
+                df["Date"]
+            )
+
+            df = df.sort_values(
+                "Date"
+            )
+
+            df.set_index(
+                "Date",
+                inplace=True
+            )
+
+        else:
+
+            df = load_maroc_index(
+                MAROC_INDICES[indice]
+            )
 
     else:
 
@@ -295,7 +327,7 @@ try:
 
     st.plotly_chart(
         fig,
-        use_container_width=True
+        width="stretch"
     )
 
     # ====================================================
