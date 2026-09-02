@@ -47,6 +47,8 @@ def compute_metrics(df):
     last_date = close.index[-1]
     last_value = close.iloc[-1]
 
+    # MTD
+
     prev_month = last_date.month - 1
     prev_year = last_date.year
 
@@ -66,6 +68,8 @@ def compute_metrics(df):
         else 0
     )
 
+    # YTD
+
     prev_year_data = close[
         close.index.year == last_date.year - 1
     ]
@@ -76,7 +80,7 @@ def compute_metrics(df):
         else 0
     )
 
-    # 1 an = 252 séances environ
+    # PERFORMANCE 1 AN
 
     if len(close) >= 252:
 
@@ -90,23 +94,30 @@ def compute_metrics(df):
 
         perf_1an = None
 
-    # 3 ans = 756 séances environ
+    # PERFORMANCE 3 ANS ANNUALISÉE
+    # Calcul basé sur les dates réelles
 
-    if len(close) >= 756:
+    nb_annees = (
+        (close.index[-1] - close.index[0]).days
+    ) / 365.25
+
+    if nb_annees >= 2.75:
 
         ratio = (
-            last_value /
-            close.iloc[-757]
+            close.iloc[-1] /
+            close.iloc[0]
         )
 
         perf_3ans = (
-            ratio ** (1 / 3)
+            ratio ** (1 / nb_annees)
             - 1
         ) * 100
 
     else:
 
         perf_3ans = None
+
+    # VOLATILITÉ
 
     returns = close.pct_change().dropna()
 
@@ -115,6 +126,8 @@ def compute_metrics(df):
         * np.sqrt(252)
         * 100
     )
+
+    # DRAWDOWN
 
     rolling_max = close.cummax()
 
@@ -126,6 +139,8 @@ def compute_metrics(df):
         drawdown.min() * 100
     )
 
+    # PLUS HAUT / BAS
+
     plus_haut = close.max()
 
     plus_bas = close.min()
@@ -133,6 +148,8 @@ def compute_metrics(df):
     distance_plus_haut = (
         last_value / plus_haut - 1
     ) * 100
+
+    # MOYENNES MOBILES
 
     mm20 = close.rolling(20).mean().iloc[-1]
 
@@ -151,34 +168,39 @@ def compute_metrics(df):
 
         "YTD (%)": round(perf_ytd, 2),
 
-        "1 An (%)": (
-            round(perf_1an, 2)
-            if perf_1an is not None
-            else None
-        ),
+        "1 An (%)":
+        round(perf_1an, 2)
+        if perf_1an is not None
+        else None,
 
-        "3 Ans Ann. (%)": (
-            round(perf_3ans, 2)
-            if perf_3ans is not None
-            else None
-        ),
+        "3 Ans Ann. (%)":
+        round(perf_3ans, 2)
+        if perf_3ans is not None
+        else None,
 
-        "Volatilité (%)": round(volatility, 2),
+        "Volatilité (%)":
+        round(volatility, 2),
 
-        "Drawdown Max (%)": round(max_drawdown, 2),
+        "Drawdown Max (%)":
+        round(max_drawdown, 2),
 
-        "Plus Haut": round(plus_haut, 2),
+        "Plus Haut":
+        round(plus_haut, 2),
 
-        "Plus Bas": round(plus_bas, 2),
+        "Plus Bas":
+        round(plus_bas, 2),
 
         "Distance Plus Haut (%)":
-            round(distance_plus_haut, 2),
+        round(distance_plus_haut, 2),
 
-        "MM20": round(mm20, 2),
+        "MM20":
+        round(mm20, 2),
 
-        "MM52": round(mm52, 2),
+        "MM52":
+        round(mm52, 2),
 
-        "Signal": signal
+        "Signal":
+        signal
     }
 
 
