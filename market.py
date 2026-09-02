@@ -94,8 +94,7 @@ def compute_metrics(df):
 
         perf_1an = None
 
-    # PERFORMANCE 3 ANS ANNUALISÉE
-    # Calcul basé sur les dates réelles
+    # PERFORMANCE 3 ANS
 
     nb_annees = (
         (close.index[-1] - close.index[0]).days
@@ -104,7 +103,8 @@ def compute_metrics(df):
     if nb_annees >= 2.75:
 
         ratio = (
-            close.iloc[-1] /
+            close.iloc[-1]
+            /
             close.iloc[0]
         )
 
@@ -117,7 +117,7 @@ def compute_metrics(df):
 
         perf_3ans = None
 
-    # VOLATILITÉ
+    # VOLATILITE
 
     returns = close.pct_change().dropna()
 
@@ -142,25 +142,75 @@ def compute_metrics(df):
     # PLUS HAUT / BAS
 
     plus_haut = close.max()
-
     plus_bas = close.min()
 
     distance_plus_haut = (
         last_value / plus_haut - 1
     ) * 100
 
-    # MOYENNES MOBILES
+    # MM
 
-    mm20 = close.rolling(20).mean().iloc[-1]
+    mm20_series = (
+        close.rolling(20).mean()
+    )
 
-    mm52 = close.rolling(52).mean().iloc[-1]
+    mm52_series = (
+        close.rolling(52).mean()
+    )
 
-    if last_value > mm20 and mm20 > mm52:
-        signal = "Haussier"
-    elif last_value < mm20 and mm20 < mm52:
-        signal = "Baissier"
+    mm20 = mm20_series.iloc[-1]
+    mm52 = mm52_series.iloc[-1]
+
+    mm20_prev = mm20_series.iloc[-2]
+    mm52_prev = mm52_series.iloc[-2]
+
+    # TENDANCE
+
+    if mm20 > mm52:
+
+        tendance = "Haussière"
+
     else:
-        signal = "Neutre"
+
+        tendance = "Baissière"
+
+    # DYNAMIQUE
+
+    ecart_actuel = mm20 - mm52
+
+    ecart_precedent = (
+        mm20_prev - mm52_prev
+    )
+
+    if abs(ecart_actuel) > abs(ecart_precedent):
+
+        dynamique = "Accélération"
+
+    else:
+
+        dynamique = "Essoufflement"
+
+    # CROISEMENTS
+
+    if (
+        mm20_prev < mm52_prev
+        and
+        mm20 > mm52
+    ):
+
+        signal = "Croisement haussier"
+
+    elif (
+        mm20_prev > mm52_prev
+        and
+        mm20 < mm52
+    ):
+
+        signal = "Croisement baissier"
+
+    else:
+
+        signal = "Aucun croisement"
 
     return {
 
@@ -199,6 +249,12 @@ def compute_metrics(df):
         "MM52":
         round(mm52, 2),
 
+        "Tendance":
+        tendance,
+
+        "Dynamique":
+        dynamique,
+
         "Signal":
         signal
     }
@@ -209,18 +265,31 @@ def generate_commentary(metrics):
     commentaire = (
         f"Le MASI affiche une performance mensuelle (MTD) de "
         f"{metrics['MTD (%)']} %. \n\n"
+
         f"Depuis le début de l'année, la performance ressort à "
         f"{metrics['YTD (%)']} %. \n\n"
+
         f"La moyenne mobile 20 séances ressort à "
         f"{metrics['MM20']}. \n\n"
+
         f"La moyenne mobile 52 séances ressort à "
         f"{metrics['MM52']}. \n\n"
-        f"Le signal technique est actuellement : "
+
+        f"Tendance : "
+        f"{metrics['Tendance']}. \n\n"
+
+        f"Dynamique : "
+        f"{metrics['Dynamique']}. \n\n"
+
+        f"Signal technique : "
         f"{metrics['Signal']}. \n\n"
+
         f"La volatilité annualisée s'établit à "
         f"{metrics['Volatilité (%)']} %. \n\n"
+
         f"Le drawdown maximal atteint "
         f"{metrics['Drawdown Max (%)']} %. \n\n"
+
         f"L'indice demeure à "
         f"{metrics['Distance Plus Haut (%)']} % "
         f"de son plus haut historique."
