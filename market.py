@@ -47,8 +47,6 @@ def compute_metrics(df):
     last_date = close.index[-1]
     last_value = close.iloc[-1]
 
-    # MTD
-
     prev_month = last_date.month - 1
     prev_year = last_date.year
 
@@ -68,8 +66,6 @@ def compute_metrics(df):
         else 0
     )
 
-    # YTD
-
     prev_year_data = close[
         close.index.year == last_date.year - 1
     ]
@@ -80,8 +76,7 @@ def compute_metrics(df):
         else 0
     )
 
-    # PERFORMANCE 1 AN
-    # ~252 séances de bourse
+    # 1 an = 252 séances environ
 
     if len(close) >= 252:
 
@@ -95,8 +90,7 @@ def compute_metrics(df):
 
         perf_1an = None
 
-    # PERFORMANCE 3 ANS ANNUALISÉE
-    # ~756 séances de bourse
+    # 3 ans = 756 séances environ
 
     if len(close) >= 756:
 
@@ -114,9 +108,6 @@ def compute_metrics(df):
 
         perf_3ans = None
 
-    # VOLATILITÉ ANNUALISÉE
-    # Données quotidiennes
-
     returns = close.pct_change().dropna()
 
     volatility = (
@@ -124,8 +115,6 @@ def compute_metrics(df):
         * np.sqrt(252)
         * 100
     )
-
-    # DRAWDOWN
 
     rolling_max = close.cummax()
 
@@ -137,8 +126,6 @@ def compute_metrics(df):
         drawdown.min() * 100
     )
 
-    # PLUS HAUT / BAS
-
     plus_haut = close.max()
 
     plus_bas = close.min()
@@ -147,72 +134,74 @@ def compute_metrics(df):
         last_value / plus_haut - 1
     ) * 100
 
-    # MOYENNES MOBILES
-
     mm20 = close.rolling(20).mean().iloc[-1]
 
     mm52 = close.rolling(52).mean().iloc[-1]
 
     if last_value > mm20 and mm20 > mm52:
-
         signal = "Haussier"
-
     elif last_value < mm20 and mm20 < mm52:
-
         signal = "Baissier"
-
     else:
-
         signal = "Neutre"
 
     return {
 
-        "MTD (%)":
-        round(perf_mtd, 2),
+        "MTD (%)": round(perf_mtd, 2),
 
-        "YTD (%)":
-        round(perf_ytd, 2),
+        "YTD (%)": round(perf_ytd, 2),
 
-        "1 An (%)":
-        round(perf_1an, 2)
-        if perf_1an is not None
-        else None,
+        "1 An (%)": (
+            round(perf_1an, 2)
+            if perf_1an is not None
+            else None
+        ),
 
-        "3 Ans Ann. (%)":
-        round(perf_3ans, 2)
-        if perf_3ans is not None
-        else None,
+        "3 Ans Ann. (%)": (
+            round(perf_3ans, 2)
+            if perf_3ans is not None
+            else None
+        ),
 
-        "Volatilité (%)":
-        round(volatility, 2),
+        "Volatilité (%)": round(volatility, 2),
 
-        "Drawdown Max (%)":
-        round(max_drawdown, 2),
+        "Drawdown Max (%)": round(max_drawdown, 2),
 
-        "Plus Haut":
-        round(plus_haut, 2),
+        "Plus Haut": round(plus_haut, 2),
 
-        "Plus Bas":
-        round(plus_bas, 2),
+        "Plus Bas": round(plus_bas, 2),
 
         "Distance Plus Haut (%)":
-        round(distance_plus_haut, 2),
+            round(distance_plus_haut, 2),
 
-        "MM20":
-        round(mm20, 2),
+        "MM20": round(mm20, 2),
 
-        "MM52":
-        round(mm52, 2),
+        "MM52": round(mm52, 2),
 
-        "Signal":
-        signal
+        "Signal": signal
     }
 
 
 def generate_commentary(metrics):
 
-    return f"""
-Le MASI affiche une performance mensuelle (MTD) de
-{metrics['MTD (%)']} %.
+    commentaire = (
+        f"Le MASI affiche une performance mensuelle (MTD) de "
+        f"{metrics['MTD (%)']} %. \n\n"
+        f"Depuis le début de l'année, la performance ressort à "
+        f"{metrics['YTD (%)']} %. \n\n"
+        f"La moyenne mobile 20 séances ressort à "
+        f"{metrics['MM20']}. \n\n"
+        f"La moyenne mobile 52 séances ressort à "
+        f"{metrics['MM52']}. \n\n"
+        f"Le signal technique est actuellement : "
+        f"{metrics['Signal']}. \n\n"
+        f"La volatilité annualisée s'établit à "
+        f"{metrics['Volatilité (%)']} %. \n\n"
+        f"Le drawdown maximal atteint "
+        f"{metrics['Drawdown Max (%)']} %. \n\n"
+        f"L'indice demeure à "
+        f"{metrics['Distance Plus Haut (%)']} % "
+        f"de son plus haut historique."
+    )
 
-Depuis le début de l'anné
+    return commentaire
