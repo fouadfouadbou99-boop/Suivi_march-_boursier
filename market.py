@@ -148,7 +148,7 @@ def compute_metrics(df):
         last_value / plus_haut - 1
     ) * 100
 
-    # MM
+    # MOYENNES MOBILES
 
     mm20_series = (
         close.rolling(20).mean()
@@ -164,15 +164,29 @@ def compute_metrics(df):
     mm20_prev = mm20_series.iloc[-2]
     mm52_prev = mm52_series.iloc[-2]
 
-    # TENDANCE
+    # ==================================================
+    # TENDANCE (CORRIGEE)
+    # ==================================================
 
-    if mm20 > mm52:
+    if (
+        last_value > mm20
+        and
+        last_value > mm52
+    ):
 
         tendance = "Haussière"
 
-    else:
+    elif (
+        last_value < mm20
+        and
+        last_value < mm52
+    ):
 
         tendance = "Baissière"
+
+    else:
+
+        tendance = "Neutre"
 
     # DYNAMIQUE
 
