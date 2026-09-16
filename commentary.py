@@ -1,39 +1,39 @@
-def generate_commentary(
-    nom,
-    cours,
-    mm20,
-    mm52,
-    ytd,
-    vol,
-    drawdown,
-    distance_plus_haut
-):
+def generate_commentary(metrics):
 
-    # Détermination de la tendance
+    commentaire = (
+        f"Le MASI affiche une performance mensuelle (MTD) de "
+        f"{metrics['MTD (%)']} %. \n\n"
 
-    if cours > mm20 and cours > mm52:
-        tendance = "Haussière"
+        f"Depuis le début de l'année, la performance ressort à "
+        f"{metrics['YTD (%)']} %. \n\n"
 
-    elif cours < mm20 and cours < mm52:
-        tendance = "Baissière"
+        f"Le cours actuel ressort à "
+        f"{metrics['Cours Actuel']} points. \n\n"
 
-    else:
-        tendance = "Neutre"
+        f"La moyenne mobile 20 séances ressort à "
+        f"{metrics['MM20']}. \n\n"
 
-    return f"""
-L'indice {nom} affiche une performance YTD de {ytd:.2f} %.
+        f"La moyenne mobile 52 séances ressort à "
+        f"{metrics['MM52']}. \n\n"
 
-Le niveau actuel ressort à {cours:,.2f} points.
+        f"Tendance : "
+        f"{metrics['Tendance']}. \n\n"
 
-La moyenne mobile 20 séances ressort à {mm20:,.2f} points.
+        f"Dynamique : "
+        f"{metrics['Dynamique']}. \n\n"
 
-La moyenne mobile 52 séances ressort à {mm52:,.2f} points.
+        f"Signal de croisement MM20/MM52 : "
+        f"{metrics['Signal']}. \n\n"
 
-Tendance technique : {tendance}.
+        f"La volatilité annualisée s'établit à "
+        f"{metrics['Volatilité (%)']} %. \n\n"
 
-La volatilité annualisée s'établit à {vol:.2f} %.
+        f"Le drawdown maximal atteint "
+        f"{metrics['Drawdown Max (%)']} %. \n\n"
 
-Le drawdown maximum atteint {drawdown:.2f} %.
+        f"L'indice demeure à "
+        f"{metrics['Distance Plus Haut (%)']} % "
+        f"de son plus haut historique."
+    )
 
-L'indice demeure à {distance_plus_haut:.2f} % de son plus haut historique.
-"""
+    return commentaire
