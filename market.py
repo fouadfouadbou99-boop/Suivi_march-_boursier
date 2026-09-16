@@ -283,14 +283,17 @@ def generate_commentary(metrics):
         f"Depuis le début de l'année, la performance ressort à "
         f"{metrics['YTD (%)']} %. \n\n"
 
-        f"La moyenne mobile 20 séances ressort à "
-        f"{metrics['MM20']}. \n\n"
-
         f"La moyenne mobile 52 séances ressort à "
         f"{metrics['MM52']}. \n\n"
 
+        f"Le cours actuel ressort à "
+        f"{metrics['Cours Actuel']} points. "
+        f"Comparé aux moyennes mobiles, cela justifie une tendance "
+        f"{metrics['Tendance']}. \n\n"
+
         f"Tendance : "
         f"{metrics['Tendance']}. \n\n"
+        ``
 
         f"Dynamique : "
         f"{metrics['Dynamique']}. \n\n"
