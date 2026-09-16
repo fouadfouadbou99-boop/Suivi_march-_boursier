@@ -256,39 +256,36 @@ def compute_metrics(df):
 def generate_commentary(metrics):
 
     commentaire = (
-        f"Le MASI affiche une performance mensuelle (MTD) de "
-        f"{metrics['MTD (%)']} %. \n\n"
-
-        f"Depuis le début de l'année, la performance ressort à "
+        f"Le MASI enregistre une performance mensuelle (MTD) de "
+        f"{metrics['MTD (%)']} % et une performance depuis le début de l'année (YTD) de "
         f"{metrics['YTD (%)']} %. \n\n"
 
-        f"Le cours actuel ressort à "
-        f"{metrics['Cours Actuel']} points. \n\n"
+        f"L'indice clôture à {metrics['Cours Actuel']} points, "
+        f"contre une moyenne mobile à 20 séances de {metrics['MM20']} points "
+        f"et une moyenne mobile à 52 séances de {metrics['MM52']} points. \n\n"
 
-        f"La moyenne mobile 20 séances ressort à "
-        f"{metrics['MM20']} points. \n\n"
+        f"Le positionnement de l'indice sous ses moyennes mobiles de référence "
+        f"traduit actuellement une tendance {metrics['Tendance'].lower()}. \n\n"
 
-        f"La moyenne mobile 52 séances ressort à "
-        f"{metrics['MM52']} points. \n\n"
+        f"La dynamique de marché est qualifiée de "
+        f"{metrics['Dynamique'].lower()}, ce qui suggère un rythme de variation "
+        f"moins soutenu par rapport aux périodes précédentes. \n\n"
 
-        f"Tendance : "
-        f"{metrics['Tendance']}. \n\n"
+        f"Aucun signal technique majeur de retournement n'est observé à ce stade "
+        f"sur les croisements entre les moyennes mobiles "
+        f"({metrics['Signal']}). \n\n"
 
-        f"Dynamique : "
-        f"{metrics['Dynamique']}. \n\n"
+        f"La volatilité annualisée ressort à "
+        f"{metrics['Volatilité (%)']} %, reflétant un niveau de risque de marché "
+        f"compatible avec les fluctuations récentes observées sur l'indice. \n\n"
 
-        f"Signal de croisement MM20/MM52 : "
-        f"{metrics['Signal']}. \n\n"
+        f"Le drawdown maximal constaté atteint "
+        f"{metrics['Drawdown Max (%)']} %, traduisant l'amplitude maximale de correction "
+        f"enregistrée sur la période analysée. \n\n"
 
-        f"La volatilité annualisée s'établit à "
-        f"{metrics['Volatilité (%)']} %. \n\n"
-
-        f"Le drawdown maximal atteint "
-        f"{metrics['Drawdown Max (%)']} %. \n\n"
-
-        f"L'indice demeure à "
-        f"{metrics['Distance Plus Haut (%)']} % "
-        f"de son plus haut historique."
+        f"Enfin, le MASI demeure en retrait de "
+        f"{abs(metrics['Distance Plus Haut (%)'])} % par rapport à son plus haut historique, "
+        f"ce qui indique qu'une partie du potentiel de récupération reste à reconstituer."
     )
 
     return commentaire
