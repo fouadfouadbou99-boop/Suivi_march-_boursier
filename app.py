@@ -165,9 +165,9 @@ try:
         f"{metrics['MM52']:,.2f}"
     )
 
-    if metrics["Signal"] == "Haussier":
+    if metrics["Tendance"] == "Haussière":
         st.success("✅ Tendance : Haussière")
-    elif metrics["Signal"] == "Baissier":
+    elif metrics["Tendance"] == "Baissière":
         st.error("🔴 Tendance : Baissière")
     else:
         st.warning("🟠 Tendance : Neutre")
