@@ -150,13 +150,8 @@ def compute_metrics(df):
 
     # MOYENNES MOBILES
 
-    mm20_series = (
-        close.rolling(20).mean()
-    )
-
-    mm52_series = (
-        close.rolling(52).mean()
-    )
+    mm20_series = close.rolling(20).mean()
+    mm52_series = close.rolling(52).mean()
 
     mm20 = mm20_series.iloc[-1]
     mm52 = mm52_series.iloc[-1]
@@ -164,23 +159,13 @@ def compute_metrics(df):
     mm20_prev = mm20_series.iloc[-2]
     mm52_prev = mm52_series.iloc[-2]
 
-    # ==================================================
-    # TENDANCE (CORRIGEE)
-    # ==================================================
+    # TENDANCE
 
-    if (
-        last_value > mm20
-        and
-        last_value > mm52
-    ):
+    if last_value > mm20 and last_value > mm52:
 
         tendance = "Haussière"
 
-    elif (
-        last_value < mm20
-        and
-        last_value < mm52
-    ):
+    elif last_value < mm20 and last_value < mm52:
 
         tendance = "Baissière"
 
@@ -191,10 +176,7 @@ def compute_metrics(df):
     # DYNAMIQUE
 
     ecart_actuel = mm20 - mm52
-
-    ecart_precedent = (
-        mm20_prev - mm52_prev
-    )
+    ecart_precedent = mm20_prev - mm52_prev
 
     if abs(ecart_actuel) > abs(ecart_precedent):
 
@@ -206,19 +188,11 @@ def compute_metrics(df):
 
     # CROISEMENTS
 
-    if (
-        mm20_prev < mm52_prev
-        and
-        mm20 > mm52
-    ):
+    if mm20_prev < mm52_prev and mm20 > mm52:
 
         signal = "Croisement haussier"
 
-    elif (
-        mm20_prev > mm52_prev
-        and
-        mm20 < mm52
-    ):
+    elif mm20_prev > mm52_prev and mm20 < mm52:
 
         signal = "Croisement baissier"
 
@@ -228,9 +202,14 @@ def compute_metrics(df):
 
     return {
 
-        "MTD (%)": round(perf_mtd, 2),
+        "Cours Actuel":
+        round(last_value, 2),
 
-        "YTD (%)": round(perf_ytd, 2),
+        "MTD (%)":
+        round(perf_mtd, 2),
+
+        "YTD (%)":
+        round(perf_ytd, 2),
 
         "1 An (%)":
         round(perf_1an, 2)
@@ -287,10 +266,10 @@ def generate_commentary(metrics):
         f"{metrics['Cours Actuel']} points. \n\n"
 
         f"La moyenne mobile 20 séances ressort à "
-        f"{metrics['MM20']}. \n\n"
+        f"{metrics['MM20']} points. \n\n"
 
         f"La moyenne mobile 52 séances ressort à "
-        f"{metrics['MM52']}. \n\n"
+        f"{metrics['MM52']} points. \n\n"
 
         f"Tendance : "
         f"{metrics['Tendance']}. \n\n"
